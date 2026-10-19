@@ -1,0 +1,50 @@
+# === Secrets / environment ===
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# === Java / Maven ===
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+
+# === JavaFX / IDE ===
+*.hprof
+
+# === Node / React (web) ===
+web/node_modules/
+web/dist/
+web/dist-ssr/
+web/*.local
+web/coverage/
+web/.vite/
+
+# === Uploaded files (never commit user content) ===
+storage/
+uploads/
+backend/storage/
+backend/uploads/
+
+# === Logs ===
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === OS / editor ===
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.swp
+
+# === Test / build artifacts ===
+backend/target/
+desktop/target/
+coverage/
