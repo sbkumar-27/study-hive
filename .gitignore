@@ -28,6 +28,7 @@ storage/
 uploads/
 backend/storage/
 backend/uploads/
+backend/build-test-storage/
 
 # === Logs ===
 *.log

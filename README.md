@@ -60,9 +60,11 @@ for day-to-day setup commands.
 ## Status
 
 This project is being built in stages (database → backend → storage → web
-→ desktop → integration → tests). Current stage: **foundation** complete,
-**backend** in progress. See `docs/development-guide.md` for the detailed
-build order and what is verified to work so far.
+→ desktop → integration → tests). Current stage: **foundation** and
+**backend** (including file storage/versioning) complete and verified
+against the real local MySQL database; **web** and **desktop** clients
+not yet started. See `docs/development-guide.md` for the detailed status
+log and `backend/README.md` for what was tested and how.
 
 ## Security notes
 
