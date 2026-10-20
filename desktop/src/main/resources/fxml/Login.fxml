@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.studyhive.desktop.controller.LoginController"
+           styleClass="page-root">
+    <VBox styleClass="card" maxWidth="380" spacing="14" alignment="CENTER_LEFT">
+        <padding><Insets top="24" right="28" bottom="24" left="28"/></padding>
+        <Label text="Log in" styleClass="h1"/>
+
+        <VBox fx:id="errorBox" styleClass="alert-banner" visible="false" managed="false">
+            <Label fx:id="errorLabel" styleClass="alert-banner-text" wrapText="true"/>
+        </VBox>
+
+        <VBox spacing="4">
+            <Label text="Username or email" styleClass="field-label"/>
+            <TextField fx:id="usernameField"/>
+        </VBox>
+        <VBox spacing="4">
+            <Label text="Password" styleClass="field-label"/>
+            <PasswordField fx:id="passwordField"/>
+        </VBox>
+
+        <Button fx:id="loginButton" text="Log in" styleClass="button-primary" maxWidth="Infinity" onAction="#handleLogin"/>
+
+        <HBox spacing="4" alignment="CENTER_LEFT">
+            <Label text="Don't have an account?" styleClass="muted"/>
+            <Hyperlink text="Register" onAction="#handleGoToRegister"/>
+        </HBox>
+    </VBox>
+</StackPane>

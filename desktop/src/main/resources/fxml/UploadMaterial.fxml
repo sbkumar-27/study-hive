@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.ScrollPane?>
+
+<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.studyhive.desktop.controller.UploadMaterialController"
+            fitToWidth="true" styleClass="page-root">
+    <VBox spacing="16" styleClass="page-root">
+        <padding><Insets top="20" right="24" bottom="24" left="24"/></padding>
+
+        <Label fx:id="headerLabel" text="Upload material" styleClass="h1"/>
+        <Label fx:id="vaultHintLabel" text="No community selected, so this upload will go to your private Personal Vault -- visible only to you."
+               styleClass="hint" wrapText="true" visible="false" managed="false"/>
+
+        <VBox styleClass="card" spacing="12" maxWidth="560">
+            <VBox fx:id="errorBox" styleClass="alert-banner" visible="false" managed="false">
+                <Label fx:id="errorLabel" styleClass="alert-banner-text" wrapText="true"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="File" styleClass="field-label"/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Button text="Choose file..." onAction="#handleChooseFile"/>
+                    <Label fx:id="fileNameLabel" text="No file chosen" styleClass="muted text-sm"/>
+                </HBox>
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="Title" styleClass="field-label"/>
+                <TextField fx:id="titleField"/>
+            </VBox>
+            <VBox spacing="4">
+                <Label text="Description (optional)" styleClass="field-label"/>
+                <TextArea fx:id="descriptionField" prefRowCount="3" wrapText="true"/>
+            </VBox>
+            <VBox spacing="4">
+                <Label text="Type" styleClass="field-label"/>
+                <ComboBox fx:id="typeCombo" maxWidth="Infinity"/>
+            </VBox>
+
+            <VBox fx:id="subjectBox" spacing="4" visible="false" managed="false">
+                <Label text="Subject (optional)" styleClass="field-label"/>
+                <ComboBox fx:id="subjectCombo" maxWidth="Infinity"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="Book name (optional)" styleClass="field-label"/>
+                <TextField fx:id="bookNameField"/>
+            </VBox>
+            <VBox spacing="4">
+                <Label text="Author (optional)" styleClass="field-label"/>
+                <TextField fx:id="authorField"/>
+            </VBox>
+
+            <HBox fx:id="questionPaperBox" spacing="12" visible="false" managed="false">
+                <VBox spacing="4">
+                    <Label text="Exam year" styleClass="field-label"/>
+                    <TextField fx:id="examYearField" prefWidth="100"/>
+                </VBox>
+                <VBox spacing="4">
+                    <Label text="Exam type" styleClass="field-label"/>
+                    <TextField fx:id="examTypeField" promptText="END_SEM, MID_SEM..." prefWidth="160"/>
+                </VBox>
+                <VBox spacing="4">
+                    <Label text="Semester" styleClass="field-label"/>
+                    <TextField fx:id="semesterField" prefWidth="80"/>
+                </VBox>
+            </HBox>
+
+            <Button fx:id="uploadButton" text="Upload" styleClass="button-primary" onAction="#handleUpload"/>
+        </VBox>
+    </VBox>
+</ScrollPane>

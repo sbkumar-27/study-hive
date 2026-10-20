@@ -59,13 +59,17 @@ for day-to-day setup commands.
 
 ## Status
 
-Foundation, backend, and the web client are complete and verified
-(backend: automated tests + a full manual walkthrough against the real
-MySQL database; web: `npm run build` + a full manual click-through
-against the real backend). Desktop is being merged in next. See
-`docs/development-guide.md` for the detailed status log, and
-`backend/README.md` / `web/README.md` for exactly what was tested and
-how.
+All four stages are implemented: foundation, backend, web client, and
+desktop client. Backend and web were each verified with automated tests
+*and* a full manual walkthrough/click-through against the real backend +
+MySQL. Desktop compiles and launches cleanly against the real backend
+(confirmed via the OS process list), but this environment has no GUI
+automation tools for desktop apps, so its screens have not been clicked
+through the way the backend and web client were -- see
+`desktop/README.md` for exactly what that means and what to check
+manually. See `docs/development-guide.md` for the detailed status log,
+and `backend/README.md` / `web/README.md` / `desktop/README.md` for
+what was tested and how in each.
 
 ## Security notes
 

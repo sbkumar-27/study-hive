@@ -87,3 +87,13 @@ not what was merely written.
   matched the backend's `storage` *source package* at any depth, silently
   excluding 4 files from every commit on `feature/backend` despite local
   tests passing) — fixed on every branch, see `backend/README.md`.
+- **2026-10-20** — Desktop stage complete on `feature/desktop`: full
+  JavaFX 21 client (login/register, communities, subjects, materials +
+  versions, vault, favorites, question papers, reports, profile), reusing
+  the same REST API contract as the web client. `mvn compile` passes (83
+  classes). Launched with `mvn javafx:run` against the real backend +
+  MySQL: starts with no exceptions, JavaFX native graphics load correctly,
+  window opens with the right title. This session has no GUI automation
+  tools for desktop apps (only the browser), so unlike the backend and
+  web client, the screens were not clicked through end-to-end — see
+  `desktop/README.md` for exactly what was and wasn't verified.
