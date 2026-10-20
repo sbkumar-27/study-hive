@@ -9,7 +9,11 @@ spring:
     # Connector/J reports it to Hibernate as java.sql.Date, and writing a converted Date back
     # into it fails under strict SQL mode ("Data truncated for column 'exam_year'"). With it off,
     # the driver treats YEAR as a SMALLINT, matching the entity's Short mapping below.
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:studyhive}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&yearIsDateType=false
+    # sslMode=REQUIRED (default): encrypts the connection, which managed hosts like Aiven mandate,
+    # without needing a custom truststore for cert verification. Override via DB_SSL_MODE only if
+    # a given host needs stricter verification (VERIFY_CA/VERIFY_IDENTITY) or, for plain local
+    # MySQL with no TLS configured, DISABLED.
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:studyhive}?sslMode=${DB_SSL_MODE:REQUIRED}&allowPublicKeyRetrieval=true&serverTimezone=UTC&yearIsDateType=false
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -42,9 +46,13 @@ studyhive:
       refresh-token: ${CATALYST_REFRESH_TOKEN:}
       project-id: ${CATALYST_PROJECT_ID:}
       project-key: ${CATALYST_PROJECT_KEY:}
-      domain: ${CATALYST_DOMAIN:catalyst.zoho.com}
-      environment: ${CATALYST_ENVIRONMENT:Production}
+      domain: ${CATALYST_DOMAIN:}
+      environment: ${CATALYST_ENVIRONMENT:}
       folder-id: ${CATALYST_FOLDER_ID:}
+    supabase:
+      url: ${SUPABASE_URL:}
+      service-key: ${SUPABASE_SERVICE_KEY:}
+      bucket: ${SUPABASE_BUCKET:}
   cors:
     web-app-origin: ${WEB_APP_ORIGIN:http://localhost:5173}
 

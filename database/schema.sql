@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS material_versions (
     material_id BIGINT UNSIGNED NOT NULL,
     version_number INT UNSIGNED NOT NULL,
     original_file_name VARCHAR(255) NOT NULL,
-    storage_provider ENUM('LOCAL', 'CATALYST') NOT NULL DEFAULT 'LOCAL',
+    storage_provider ENUM('LOCAL', 'CATALYST', 'FIREBASE', 'SUPABASE') NOT NULL DEFAULT 'LOCAL',
     storage_key VARCHAR(500) NOT NULL,
     mime_type VARCHAR(150),
     file_size_bytes BIGINT UNSIGNED NOT NULL,
