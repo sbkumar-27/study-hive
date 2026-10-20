@@ -55,3 +55,19 @@ not what was merely written.
   DB — all 10 tables already matched; only the `popular_materials` view
   was added), docs skeletons, `.env.example`, `.gitignore`. Not yet built
   or run (no application code exists yet).
+- **2026-10-19/20** — Backend stage complete: full Spring Boot 4 REST API
+  (auth, communities, subjects, materials + versioning, favorites, views,
+  question papers, reports) on `feature/backend`. `mvn test` passes (12
+  tests: access-control unit tests + one MockMvc end-to-end test on H2).
+  Additionally hand-verified the full golden path against the real local
+  MySQL `studyhive` database with `scripts\dev-backend.bat` + curl:
+  register/login, create a public community and a password-protected
+  private one, join both (and confirmed a wrong/missing password is
+  rejected), create a subject, upload a material and a question paper,
+  search/filter, download, add a second file version (first version still
+  retained), favorite/unfavorite, record a view, leave a community
+  (blocked for the owner), submit and resolve a report, and confirmed a
+  non-member gets 403 on a community material and on another user's
+  Personal Vault item. See `backend/README.md` for the MySQL/JDBC/Spring
+  Boot 4 quirks this surfaced (Jackson 3, `-parameters`, YEAR/TINYINT
+  column mapping) and exactly how each was fixed.

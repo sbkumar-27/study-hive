@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:studyhive-test;DB_CLOSE_DELAY=-1;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: false
+
+studyhive:
+  jwt:
+    secret: test-only-secret-not-for-production-use-minimum-32-bytes-long
+    expiration-ms: 3600000
+  storage:
+    root: ./build-test-storage
+  cors:
+    web-app-origin: http://localhost:5173
