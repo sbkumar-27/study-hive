@@ -59,8 +59,10 @@ for day-to-day setup commands.
 
 ## Status
 
-All four stages are implemented: foundation, backend, web client, and
-desktop client. Backend and web were each verified with automated tests
+All stages are implemented and merged into `main`: foundation, database,
+backend, web client, desktop client, and integration. The full root
+build (`mvn clean verify` at the repo root + `npm run build` in `web/`)
+passes cleanly. Backend and web were each verified with automated tests
 *and* a full manual walkthrough/click-through against the real backend +
 MySQL. Desktop compiles and launches cleanly against the real backend
 (confirmed via the OS process list), but this environment has no GUI

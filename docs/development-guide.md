@@ -97,3 +97,13 @@ not what was merely written.
   tools for desktop apps (only the browser), so unlike the backend and
   web client, the screens were not clicked through end-to-end — see
   `desktop/README.md` for exactly what was and wasn't verified.
+- **2026-10-20** — Integration: merged `feature/backend`, `feature/web`,
+  and `feature/desktop` into `feature/integration`, then into `main`.
+  Reconciled the doc conflicts (this file, root `README.md`) rather than
+  picking one side. Fixed two Spring Framework 7 deprecation warnings
+  surfaced by a full root `mvn clean verify` (`org.springframework.lang.NonNull`
+  → `org.jspecify.annotations.NonNull`; `HttpStatus.PAYLOAD_TOO_LARGE` →
+  `HttpStatus.CONTENT_TOO_LARGE`, same 413 status code). Re-ran the full
+  backend test suite (12/12 pass) and a login smoke test against the
+  merged `main` branch's backend + the real MySQL database after merging
+  — no regressions from the merge.
