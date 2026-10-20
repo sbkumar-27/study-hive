@@ -1,5 +1,7 @@
 server:
-  port: ${SERVER_PORT:8080}
+  # Render (and most PaaS hosts) inject PORT at runtime and expect the app to bind to it;
+  # SERVER_PORT remains the local-dev override, 8080 the final fallback.
+  port: ${PORT:${SERVER_PORT:8080}}
 
 spring:
   application:

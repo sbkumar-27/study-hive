@@ -1,4 +1,4 @@
-import { api, authHeader } from './client'
+import { api, authHeader, downloadUrl } from './client'
 import type { Material, MaterialType, MaterialVersion, PageResponse, SortOrder } from '../types'
 
 export interface CreateMaterialRequest {
@@ -72,11 +72,11 @@ export const materialsApi = {
   },
 
   async downloadLatest(id: number, filenameHint: string) {
-    await downloadBlob(`/api/v1/materials/${id}/download`, filenameHint)
+    await downloadBlob(downloadUrl(`/materials/${id}/download`), filenameHint)
   },
 
   async downloadVersion(materialId: number, versionId: number, filenameHint: string) {
-    await downloadBlob(`/api/v1/materials/${materialId}/versions/${versionId}/download`, filenameHint)
+    await downloadBlob(downloadUrl(`/materials/${materialId}/versions/${versionId}/download`), filenameHint)
   },
 }
 

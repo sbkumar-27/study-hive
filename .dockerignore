@@ -1,0 +1,26 @@
+# Keeps the Docker build context small and ensures nothing secret or
+# environment-specific can ever be baked into an image, even by accident.
+.git/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+backend/target/
+backend/storage/
+backend/uploads/
+backend/build-test-storage/
+desktop/target/
+
+web/node_modules/
+web/dist/
+web/dist-ssr/
+web/.vite/
+
+.idea/
+.vscode/
+*.iml
+*.log
+docs/
+.claude/

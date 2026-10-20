@@ -1,6 +1,10 @@
 import type { ApiErrorBody } from '../types'
 
-const API_BASE = '/api/v1'
+// VITE_API_BASE_URL is the backend's origin only (e.g. https://studyhive-backend.onrender.com),
+// no trailing slash and no /api/v1 suffix. Defaults to the local backend for dev, matching the
+// existing CORS allowance for http://localhost:5173.
+const API_ORIGIN = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/+$/, '') || 'http://localhost:8080'
+const API_BASE = `${API_ORIGIN}/api/v1`
 
 export class ApiError extends Error {
   status: number
