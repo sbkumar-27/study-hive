@@ -1,5 +1,6 @@
 package com.studyhive.backend.storage;
 
+import com.studyhive.backend.entity.StorageProviderType;
 import com.studyhive.backend.exception.InvalidFileException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +24,10 @@ import org.springframework.web.multipart.MultipartFile;
  * Never trusts the client-supplied filename for the on-disk path: a fresh,
  * random storage key is generated for every upload, so path traversal via a
  * crafted filename (e.g. "../../etc/passwd") is structurally impossible.
+ *
+ * <p>Always registered as a bean -- regardless of {@code studyhive.storage.provider} --
+ * so existing LOCAL material versions stay retrievable even after switching new
+ * uploads to Catalyst. See {@link StorageProviderRegistry}.
  */
 @Component
 public class LocalFileSystemStorageProvider implements StorageProvider {
@@ -111,6 +116,11 @@ public class LocalFileSystemStorageProvider implements StorageProvider {
     @Override
     public boolean exists(String storageKey) {
         return Files.exists(resolveWithinRoot(storageKey));
+    }
+
+    @Override
+    public StorageProviderType getType() {
+        return StorageProviderType.LOCAL;
     }
 
     private Path resolveWithinRoot(String storageKey) {

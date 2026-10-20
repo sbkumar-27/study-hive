@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { communitiesApi } from '../api/communities'
 import { ErrorBanner } from '../components/ErrorBanner'
+import { Icon } from '../components/Icon'
 import type { CommunityType } from '../types'
 
 export function CreateCommunityPage() {
@@ -69,7 +70,14 @@ export function CreateCommunityPage() {
           </div>
         )}
         <button type="submit" className="btn btn-primary" disabled={submitting}>
-          {submitting ? 'Creating...' : 'Create community'}
+          {submitting ? (
+            'Creating...'
+          ) : (
+            <>
+              <Icon name="plus" size={16} />
+              Create community
+            </>
+          )}
         </button>
       </form>
     </div>

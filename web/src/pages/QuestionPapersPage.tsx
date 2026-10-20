@@ -31,10 +31,14 @@ export function QuestionPapersPage() {
 
   return (
     <div className="stack">
-      <h1>Question papers</h1>
-      <p className="hint">
-        Filter by subject ID (find it on a community's subject card URL), exam year, exam type, or semester.
-      </p>
+      <div className="page-header" style={{ marginBottom: 0 }}>
+        <div>
+          <h1>Question papers</h1>
+          <p className="page-subtitle">
+            Filter by subject ID (find it on a community's subject card URL), exam year, exam type, or semester.
+          </p>
+        </div>
+      </div>
 
       <div className="filters">
         <input
@@ -78,35 +82,37 @@ export function QuestionPapersPage() {
       {query.isLoading && <Spinner />}
 
       {query.data && query.data.content.length === 0 && (
-        <EmptyState title="No question papers match those filters" />
+        <EmptyState icon="papers" title="No question papers match those filters" />
       )}
 
       {query.data && query.data.content.length > 0 && (
         <>
-          <table>
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Subject</th>
-                <th>Year</th>
-                <th>Type</th>
-                <th>Semester</th>
-              </tr>
-            </thead>
-            <tbody>
-              {query.data.content.map((qp) => (
-                <tr key={qp.questionPaperId}>
-                  <td>
-                    <Link to={`/materials/${qp.material.materialId}`}>{qp.material.title}</Link>
-                  </td>
-                  <td>{qp.material.subjectCode ?? '--'}</td>
-                  <td>{qp.examYear ?? '--'}</td>
-                  <td>{qp.examType ?? '--'}</td>
-                  <td>{qp.semester ?? '--'}</td>
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Subject</th>
+                  <th>Year</th>
+                  <th>Type</th>
+                  <th>Semester</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {query.data.content.map((qp) => (
+                  <tr key={qp.questionPaperId}>
+                    <td>
+                      <Link to={`/materials/${qp.material.materialId}`}>{qp.material.title}</Link>
+                    </td>
+                    <td>{qp.material.subjectCode ?? '--'}</td>
+                    <td>{qp.examYear ?? '--'}</td>
+                    <td>{qp.examType ?? '--'}</td>
+                    <td>{qp.semester ?? '--'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <Pagination page={query.data.page} totalPages={query.data.totalPages} onChange={setPage} />
         </>
       )}

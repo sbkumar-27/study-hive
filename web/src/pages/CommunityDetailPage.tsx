@@ -6,6 +6,7 @@ import { subjectsApi } from '../api/subjects'
 import { ErrorBanner } from '../components/ErrorBanner'
 import { Spinner } from '../components/Spinner'
 import { EmptyState } from '../components/EmptyState'
+import { Icon } from '../components/Icon'
 
 export function CommunityDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -32,6 +33,7 @@ export function CommunityDetailPage() {
   const [subjectName, setSubjectName] = useState('')
   const [subjectError, setSubjectError] = useState<unknown>(null)
   const [showSubjectForm, setShowSubjectForm] = useState(false)
+  const [confirmingLeave, setConfirmingLeave] = useState(false)
 
   const addSubject = useMutation({
     mutationFn: () => subjectsApi.create(communityId, { subjectCode, subjectName }),
@@ -65,39 +67,71 @@ export function CommunityDetailPage() {
 
   return (
     <div className="stack">
-      <div className="row-between">
+      <div className="page-header">
         <div>
           <h1 style={{ marginBottom: 4 }}>{community.name}</h1>
           <div className="row text-sm muted">
-            <span className="badge">{community.communityType}</span>
+            <span className="badge">
+              <Icon name={community.communityType === 'PRIVATE' ? 'lock' : 'globe'} size={11} />
+              {community.communityType}
+            </span>
             <span>{community.memberCount} members</span>
             <span>&middot;</span>
             <span>owned by {community.ownerUsername}</span>
           </div>
         </div>
-        {isMember && !isOwner && (
-          <button className="btn btn-danger" onClick={() => leaveMutation.mutate()} disabled={leaveMutation.isPending}>
-            Leave community
-          </button>
+        {isMember && !isOwner && !confirmingLeave && (
+          <div className="actions">
+            <button className="btn btn-danger" onClick={() => setConfirmingLeave(true)}>
+              Leave community
+            </button>
+          </div>
         )}
       </div>
+
+      {isMember && !isOwner && confirmingLeave && (
+        <div className="confirm-box">
+          <Icon name="warning" size={16} />
+          <span style={{ flex: 1 }}>Leave <strong>{community.name}</strong>? You'll need the join code to rejoin.</span>
+          <button
+            className="btn btn-danger btn-sm"
+            onClick={() => leaveMutation.mutate()}
+            disabled={leaveMutation.isPending}
+          >
+            {leaveMutation.isPending ? 'Leaving...' : 'Yes, leave'}
+          </button>
+          <button className="btn btn-sm" onClick={() => setConfirmingLeave(false)} disabled={leaveMutation.isPending}>
+            Cancel
+          </button>
+        </div>
+      )}
 
       {community.description && <p>{community.description}</p>}
 
       {isMember && community.joinCode && (
-        <div className="card">
-          <strong>Join code:</strong> <code>{community.joinCode}</code>
-          {community.hasPassword && <span className="badge badge-warning" style={{ marginLeft: 8 }}>Password protected</span>}
-          <p className="text-sm muted" style={{ marginTop: 8, marginBottom: 0 }}>
-            Share this code with friends so they can join.
-          </p>
+        <div className="card row-between">
+          <div>
+            <strong>Join code:</strong> <code>{community.joinCode}</code>
+            {community.hasPassword && (
+              <span className="badge badge-warning" style={{ marginLeft: 8 }}>
+                <Icon name="lock" size={11} />
+                Password protected
+              </span>
+            )}
+            <p className="text-sm muted" style={{ marginTop: 8, marginBottom: 0 }}>
+              Share this code with friends so they can join.
+            </p>
+          </div>
         </div>
       )}
 
       {!isMember && (
-        <div className="alert alert-error">
-          You're viewing limited public information. Join this community (using its join code from the
-          Communities page) to see subjects, members, and materials.
+        <div className="alert alert-info">
+          <Icon name="warning" size={16} />
+          <span>
+            You're viewing limited public information. Join this community (using its join code from the
+            Communities page) to see subjects, members, and materials.
+          </span>
         </div>
       )}
 
@@ -106,7 +140,14 @@ export function CommunityDetailPage() {
           <div className="row-between">
             <h2 style={{ marginBottom: 0 }}>Subjects</h2>
             <button className="btn btn-sm" onClick={() => setShowSubjectForm((v) => !v)}>
-              {showSubjectForm ? 'Cancel' : 'Add subject'}
+              {showSubjectForm ? (
+                'Cancel'
+              ) : (
+                <>
+                  <Icon name="plus" size={14} />
+                  Add subject
+                </>
+              )}
             </button>
           </div>
 
@@ -135,7 +176,7 @@ export function CommunityDetailPage() {
 
           {subjectsQuery.isLoading && <Spinner />}
           {subjectsQuery.data && subjectsQuery.data.length === 0 && (
-            <EmptyState title="No subjects yet" hint="Add the first subject for this community." />
+            <EmptyState icon="materials" title="No subjects yet" hint="Add the first subject for this community." />
           )}
           {subjectsQuery.data && subjectsQuery.data.length > 0 && (
             <div className="grid">
@@ -145,10 +186,17 @@ export function CommunityDetailPage() {
                   to={`/materials?communityId=${communityId}&subjectId=${s.subjectId}`}
                   className="card card-link"
                 >
-                  <strong>{s.subjectCode}</strong>
-                  <p className="text-sm muted" style={{ marginBottom: 0 }}>
-                    {s.subjectName}
-                  </p>
+                  <div className="row" style={{ alignItems: 'flex-start' }}>
+                    <span className="card-icon">
+                      <Icon name="materials" size={16} />
+                    </span>
+                    <div>
+                      <strong>{s.subjectCode}</strong>
+                      <p className="text-sm muted" style={{ marginBottom: 0 }}>
+                        {s.subjectName}
+                      </p>
+                    </div>
+                  </div>
                 </Link>
               ))}
             </div>
@@ -156,9 +204,11 @@ export function CommunityDetailPage() {
 
           <div className="row">
             <Link to={`/materials?communityId=${communityId}`} className="btn btn-primary">
+              <Icon name="materials" size={16} />
               Browse all materials
             </Link>
             <Link to={`/materials/new?communityId=${communityId}`} className="btn">
+              <Icon name="upload" size={16} />
               Upload material
             </Link>
           </div>
@@ -166,28 +216,30 @@ export function CommunityDetailPage() {
           <h2>Members</h2>
           {membersQuery.isLoading && <Spinner />}
           {membersQuery.data && (
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Username</th>
-                  <th>Role</th>
-                  <th>Joined</th>
-                </tr>
-              </thead>
-              <tbody>
-                {membersQuery.data.map((m) => (
-                  <tr key={m.userId}>
-                    <td>{m.displayName}</td>
-                    <td>{m.username}</td>
-                    <td>
-                      <span className="badge badge-primary">{m.memberRole}</span>
-                    </td>
-                    <td className="text-sm muted">{new Date(m.joinedAt).toLocaleDateString()}</td>
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Joined</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {membersQuery.data.map((m) => (
+                    <tr key={m.userId}>
+                      <td>{m.displayName}</td>
+                      <td>{m.username}</td>
+                      <td>
+                        <span className="badge badge-primary">{m.memberRole}</span>
+                      </td>
+                      <td className="text-sm muted">{new Date(m.joinedAt).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </>
       )}

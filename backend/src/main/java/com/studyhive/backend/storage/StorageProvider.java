@@ -1,5 +1,6 @@
 package com.studyhive.backend.storage;
 
+import com.studyhive.backend.entity.StorageProviderType;
 import java.io.InputStream;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,4 +26,7 @@ public interface StorageProvider {
     void delete(String storageKey);
 
     boolean exists(String storageKey);
+
+    /** Which provider this instance actually is, recorded on each stored version. */
+    StorageProviderType getType();
 }

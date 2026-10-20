@@ -29,9 +29,14 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="center-pad">
-      <div className="card" style={{ width: '100%', maxWidth: 440 }}>
-        <h1>Create your account</h1>
+    <div className="auth-shell">
+      <div className="card auth-card" style={{ maxWidth: 440 }}>
+        <div className="auth-brand">
+          <span className="navbar-logo">SH</span>
+          <strong>StudyHive</strong>
+        </div>
+        <h1 style={{ marginBottom: 4 }}>Create your account</h1>
+        <p className="page-subtitle" style={{ marginBottom: 20 }}>Join StudyHive to share and discover study materials.</p>
         <form className="form" onSubmit={handleSubmit}>
           <ErrorBanner error={error} />
           <div className="form-group">

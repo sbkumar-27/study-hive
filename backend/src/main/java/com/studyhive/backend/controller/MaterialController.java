@@ -9,7 +9,7 @@ import com.studyhive.backend.entity.MaterialType;
 import com.studyhive.backend.entity.MaterialVersion;
 import com.studyhive.backend.security.AppUserPrincipal;
 import com.studyhive.backend.service.MaterialService;
-import com.studyhive.backend.storage.StorageProvider;
+import com.studyhive.backend.storage.StorageProviderRegistry;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
@@ -38,11 +38,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class MaterialController {
 
     private final MaterialService materialService;
-    private final StorageProvider storageProvider;
+    private final StorageProviderRegistry storageProviderRegistry;
 
-    public MaterialController(MaterialService materialService, StorageProvider storageProvider) {
+    public MaterialController(MaterialService materialService, StorageProviderRegistry storageProviderRegistry) {
         this.materialService = materialService;
-        this.storageProvider = storageProvider;
+        this.storageProviderRegistry = storageProviderRegistry;
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -146,7 +146,9 @@ public class MaterialController {
     }
 
     private ResponseEntity<Resource> toDownloadResponse(MaterialVersion version) {
-        Resource resource = storageProvider.retrieve(version.getStorageKey());
+        Resource resource = storageProviderRegistry
+                .resolve(version.getStorageProvider())
+                .retrieve(version.getStorageKey());
         MediaType mediaType = version.getMimeType() != null
                 ? MediaType.parseMediaType(version.getMimeType())
                 : MediaType.APPLICATION_OCTET_STREAM;

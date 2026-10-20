@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom'
 import { materialsApi } from '../api/materials'
 import { reportsApi } from '../api/reports'
 import { ErrorBanner } from '../components/ErrorBanner'
+import { Icon } from '../components/Icon'
 import { Spinner } from '../components/Spinner'
 import { useAuth } from '../context/AuthContext'
 
@@ -126,13 +127,23 @@ export function MaterialDetailPage() {
     <div className="stack">
       {!editing ? (
         <>
-          <div className="row-between">
+          <div className="page-header" style={{ marginBottom: 0 }}>
             <h1 style={{ marginBottom: 4 }}>{material.title}</h1>
-            <div className="row">
-              <button className="btn" onClick={() => favoriteMutation.mutate()} disabled={favoriteMutation.isPending}>
-                {material.favorited ? '★ Favorited' : '☆ Favorite'}
+            <div className="actions">
+              <button
+                className="btn"
+                onClick={() => favoriteMutation.mutate()}
+                disabled={favoriteMutation.isPending}
+              >
+                <Icon
+                  name={material.favorited ? 'starFilled' : 'star'}
+                  size={16}
+                  style={{ color: material.favorited ? '#f0a500' : undefined }}
+                />
+                {material.favorited ? 'Favorited' : 'Favorite'}
               </button>
               <button className="btn btn-primary" onClick={handleDownloadLatest}>
+                <Icon name="download" size={16} />
                 Download latest
               </button>
             </div>
@@ -140,6 +151,12 @@ export function MaterialDetailPage() {
 
           <div className="row text-sm muted">
             <span className="badge">{material.materialType.replace('_', ' ')}</span>
+            {material.visibility === 'PRIVATE' && (
+              <span className="badge badge-vault">
+                <Icon name="lock" size={11} />
+                Vault
+              </span>
+            )}
             {material.subjectCode && <span>{material.subjectCode} -- {material.subjectName}</span>}
             <span>&middot;</span>
             <span>{material.viewCount} views</span>
@@ -165,6 +182,7 @@ export function MaterialDetailPage() {
             )}
             {!isOwner && (
               <button className="btn" onClick={() => setShowReportForm((v) => !v)}>
+                <Icon name="warning" size={15} />
                 Report this material
               </button>
             )}
@@ -247,13 +265,20 @@ export function MaterialDetailPage() {
         </form>
       )}
 
-      <hr style={{ border: 'none', borderTop: '1px solid var(--color-border)' }} />
+      <hr className="divider" />
 
       <div className="row-between">
         <h2 style={{ marginBottom: 0 }}>Version history</h2>
         {isOwner && (
           <button className="btn btn-sm" onClick={() => setShowVersionForm((v) => !v)}>
-            {showVersionForm ? 'Cancel' : 'Upload new version'}
+            {showVersionForm ? (
+              'Cancel'
+            ) : (
+              <>
+                <Icon name="plus" size={14} />
+                Upload new version
+              </>
+            )}
           </button>
         )}
       </div>
@@ -295,39 +320,49 @@ export function MaterialDetailPage() {
 
       {versionsQuery.isLoading && <Spinner />}
       {versionsQuery.data && (
-        <table>
-          <thead>
-            <tr>
-              <th>Version</th>
-              <th>File</th>
-              <th>Size</th>
-              <th>Uploaded by</th>
-              <th>Date</th>
-              <th>Notes</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {versionsQuery.data.map((v) => (
-              <tr key={v.versionId}>
-                <td>v{v.versionNumber}</td>
-                <td>{v.originalFileName}</td>
-                <td>{formatBytes(v.fileSizeBytes)}</td>
-                <td>{v.uploadedByUsername}</td>
-                <td className="text-sm muted">{new Date(v.createdAt).toLocaleString()}</td>
-                <td className="text-sm muted">{v.versionNotes ?? '--'}</td>
-                <td>
-                  <button
-                    className="btn btn-sm"
-                    onClick={() => handleDownloadVersion(v.versionId, v.originalFileName)}
-                  >
-                    Download
-                  </button>
-                </td>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Version</th>
+                <th>File</th>
+                <th>Size</th>
+                <th>Uploaded by</th>
+                <th>Date</th>
+                <th>Notes</th>
+                <th />
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {versionsQuery.data.map((v, i) => (
+                <tr key={v.versionId}>
+                  <td>
+                    v{v.versionNumber}
+                    {i === 0 && (
+                      <span className="badge badge-primary" style={{ marginLeft: 6 }}>
+                        Latest
+                      </span>
+                    )}
+                  </td>
+                  <td>{v.originalFileName}</td>
+                  <td>{formatBytes(v.fileSizeBytes)}</td>
+                  <td>{v.uploadedByUsername}</td>
+                  <td className="text-sm muted">{new Date(v.createdAt).toLocaleString()}</td>
+                  <td className="text-sm muted">{v.versionNotes ?? '--'}</td>
+                  <td>
+                    <button
+                      className="btn btn-sm"
+                      onClick={() => handleDownloadVersion(v.versionId, v.originalFileName)}
+                    >
+                      <Icon name="download" size={13} />
+                      Download
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )

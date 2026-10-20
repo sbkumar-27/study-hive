@@ -4,6 +4,13 @@
 !.env.example
 *.pem
 *.key
+# A stray application.properties alongside application.yml silently overrides
+# it (.properties beats .yml for the same key per Spring Boot's own docs) --
+# a real one leaked a plaintext DB password and ddl-auto=update here once.
+# application.yml is the only authoritative backend config; never add a
+# sibling .properties file to override it.
+/backend/src/main/resources/application.properties
+/backend/src/main/resources/application-*.properties
 
 # === Java / Maven ===
 target/

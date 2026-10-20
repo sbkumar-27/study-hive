@@ -28,9 +28,14 @@ export function LoginPage() {
   }
 
   return (
-    <div className="center-pad">
-      <div className="card" style={{ width: '100%', maxWidth: 400 }}>
-        <h1>Log in</h1>
+    <div className="auth-shell">
+      <div className="card auth-card">
+        <div className="auth-brand">
+          <span className="navbar-logo">SH</span>
+          <strong>StudyHive</strong>
+        </div>
+        <h1 style={{ marginBottom: 4 }}>Welcome back</h1>
+        <p className="page-subtitle" style={{ marginBottom: 20 }}>Log in to access your communities and materials.</p>
         <form className="form" onSubmit={handleSubmit}>
           <ErrorBanner error={error} />
           <div className="form-group">

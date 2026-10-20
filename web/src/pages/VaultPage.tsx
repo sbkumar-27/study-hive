@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { materialsApi } from '../api/materials'
 import { ErrorBanner } from '../components/ErrorBanner'
 import { EmptyState } from '../components/EmptyState'
+import { Icon } from '../components/Icon'
 import { Pagination } from '../components/Pagination'
 import { Spinner } from '../components/Spinner'
 
@@ -13,33 +14,57 @@ export function VaultPage() {
 
   return (
     <div className="stack">
-      <div className="row-between">
+      <div className="page-header">
         <div>
-          <h1 style={{ marginBottom: 4 }}>My Personal Vault</h1>
-          <p className="text-sm muted" style={{ marginBottom: 0 }}>
-            Private materials only you can see.
+          <h1>My Personal Vault</h1>
+          <p className="page-subtitle">
+            <Icon name="lock" size={14} /> Private materials only you can see -- never shared with any community.
           </p>
         </div>
-        <Link to="/materials/new" className="btn btn-primary">
-          Upload to vault
-        </Link>
+        <div className="actions">
+          <Link to="/materials/new" className="btn btn-primary">
+            <Icon name="upload" size={16} />
+            Upload to vault
+          </Link>
+        </div>
       </div>
 
       <ErrorBanner error={query.error} />
       {query.isLoading && <Spinner />}
 
       {query.data && query.data.content.length === 0 && (
-        <EmptyState title="Your vault is empty" hint="Upload a private note or exam prep file just for you." />
+        <EmptyState
+          icon="vault"
+          title="Your vault is empty"
+          hint="Upload a private note or exam prep file just for you."
+          action={
+            <Link to="/materials/new" className="btn btn-primary btn-sm">
+              Upload your first file
+            </Link>
+          }
+        />
       )}
 
       {query.data && query.data.content.length > 0 && (
         <>
           <div className="grid">
             {query.data.content.map((m) => (
-              <Link key={m.materialId} to={`/materials/${m.materialId}`} className="card card-link">
-                <h3 style={{ marginBottom: 6, fontSize: '1.05rem' }}>{m.title}</h3>
-                <span className="badge">{m.materialType.replace('_', ' ')}</span>
-                {m.description && <p className="text-sm" style={{ marginTop: 8 }}>{m.description}</p>}
+              <Link key={m.materialId} to={`/materials/${m.materialId}`} className="card card-link vault-card">
+                <div className="row" style={{ marginBottom: 8, alignItems: 'flex-start' }}>
+                  <span className="card-icon">
+                    <Icon name="lock" size={16} />
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h3 style={{ margin: 0, fontSize: '1.02rem' }}>{m.title}</h3>
+                    <span className="badge badge-vault" style={{ marginTop: 4 }}>
+                      {m.materialType.replace('_', ' ')}
+                    </span>
+                  </div>
+                </div>
+                {m.description && <p className="text-sm">{m.description}</p>}
+                <p className="text-sm muted" style={{ marginBottom: 0 }}>
+                  v{m.latestVersionNumber} &middot; updated {new Date(m.updatedAt).toLocaleDateString()}
+                </p>
               </Link>
             ))}
           </div>

@@ -1,4 +1,5 @@
 import { ApiError } from '../api/client'
+import { Icon } from './Icon'
 
 export function errorMessage(err: unknown): string {
   if (err instanceof ApiError) {
@@ -13,7 +14,8 @@ export function ErrorBanner({ error }: { error: unknown }) {
   if (!error) return null
   return (
     <div className="alert alert-error" role="alert">
-      {errorMessage(error)}
+      <Icon name="warning" size={16} />
+      <span>{errorMessage(error)}</span>
     </div>
   )
 }

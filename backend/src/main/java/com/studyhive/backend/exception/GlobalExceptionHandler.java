@@ -1,6 +1,7 @@
 package com.studyhive.backend.exception;
 
 import com.studyhive.backend.dto.common.ApiError;
+import com.studyhive.backend.storage.UnsupportedStorageProviderException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import org.slf4j.Logger;
@@ -38,6 +39,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidFileException.class)
     public ResponseEntity<ApiError> handleInvalidFile(InvalidFileException ex, HttpServletRequest request) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(UnsupportedStorageProviderException.class)
+    public ResponseEntity<ApiError> handleUnsupportedStorageProvider(
+            UnsupportedStorageProviderException ex, HttpServletRequest request) {
+        log.error("Unsupported storage provider on {} {}: {}", request.getMethod(), request.getRequestURI(), ex.getMessage());
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
     }
 
     @ExceptionHandler({ForbiddenException.class, AccessDeniedException.class})

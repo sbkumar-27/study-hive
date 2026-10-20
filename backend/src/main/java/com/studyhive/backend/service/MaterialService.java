@@ -13,7 +13,6 @@ import com.studyhive.backend.entity.MaterialVersion;
 import com.studyhive.backend.entity.MaterialView;
 import com.studyhive.backend.entity.MaterialVisibility;
 import com.studyhive.backend.entity.QuestionPaper;
-import com.studyhive.backend.entity.StorageProviderType;
 import com.studyhive.backend.entity.Subject;
 import com.studyhive.backend.entity.User;
 import com.studyhive.backend.exception.BadRequestException;
@@ -26,7 +25,7 @@ import com.studyhive.backend.repository.MaterialVersionRepository;
 import com.studyhive.backend.repository.MaterialViewRepository;
 import com.studyhive.backend.repository.QuestionPaperRepository;
 import com.studyhive.backend.repository.UserRepository;
-import com.studyhive.backend.storage.StorageProvider;
+import com.studyhive.backend.storage.StorageProviderRegistry;
 import com.studyhive.backend.storage.StoredFile;
 import java.time.Duration;
 import java.time.Instant;
@@ -55,7 +54,7 @@ public class MaterialService {
     private final UserRepository userRepository;
     private final CommunityService communityService;
     private final SubjectService subjectService;
-    private final StorageProvider storageProvider;
+    private final StorageProviderRegistry storageProviderRegistry;
 
     public MaterialService(
             MaterialRepository materialRepository,
@@ -66,7 +65,7 @@ public class MaterialService {
             UserRepository userRepository,
             CommunityService communityService,
             SubjectService subjectService,
-            StorageProvider storageProvider) {
+            StorageProviderRegistry storageProviderRegistry) {
         this.materialRepository = materialRepository;
         this.versionRepository = versionRepository;
         this.viewRepository = viewRepository;
@@ -75,7 +74,7 @@ public class MaterialService {
         this.userRepository = userRepository;
         this.communityService = communityService;
         this.subjectService = subjectService;
-        this.storageProvider = storageProvider;
+        this.storageProviderRegistry = storageProviderRegistry;
     }
 
     @Transactional
@@ -131,7 +130,7 @@ public class MaterialService {
                 questionPaperRepository.save(qp);
             }
         } catch (RuntimeException e) {
-            storageProvider.delete(firstVersion.getStorageKey());
+            storageProviderRegistry.resolve(firstVersion.getStorageProvider()).delete(firstVersion.getStorageKey());
             throw e;
         }
 
@@ -308,7 +307,8 @@ public class MaterialService {
     }
 
     private MaterialVersion storeNewVersion(Material material, MultipartFile file, String versionNotes, User uploader) {
-        StoredFile stored = storageProvider.store(file);
+        var uploadProvider = storageProviderRegistry.forNewUpload();
+        StoredFile stored = uploadProvider.store(file);
         int nextVersionNumber = versionRepository
                 .findTopByMaterial_MaterialIdOrderByVersionNumberDesc(material.getMaterialId())
                 .map(v -> v.getVersionNumber() + 1)
@@ -318,7 +318,7 @@ public class MaterialService {
         version.setMaterial(material);
         version.setVersionNumber(nextVersionNumber);
         version.setOriginalFileName(sanitizeFileName(file.getOriginalFilename()));
-        version.setStorageProvider(StorageProviderType.LOCAL);
+        version.setStorageProvider(uploadProvider.getType());
         version.setStorageKey(stored.storageKey());
         version.setMimeType(file.getContentType());
         version.setFileSizeBytes(stored.fileSizeBytes());

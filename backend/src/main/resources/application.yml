@@ -31,9 +31,20 @@ studyhive:
     secret: ${JWT_SECRET:dev-only-insecure-secret-change-me-please-change-me-now-32bytes}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   storage:
+    # local (default) or catalyst -- see CatalystFileStoreStorageProvider
+    provider: ${STORAGE_PROVIDER:local}
     root: ${STORAGE_ROOT:./storage}
     max-upload-size-mb: ${MAX_UPLOAD_SIZE_MB:25}
     allowed-extensions: pdf,doc,docx,ppt,pptx,txt,png,jpg,jpeg
+    catalyst:
+      client-id: ${CATALYST_CLIENT_ID:}
+      client-secret: ${CATALYST_CLIENT_SECRET:}
+      refresh-token: ${CATALYST_REFRESH_TOKEN:}
+      project-id: ${CATALYST_PROJECT_ID:}
+      project-key: ${CATALYST_PROJECT_KEY:}
+      domain: ${CATALYST_DOMAIN:catalyst.zoho.com}
+      environment: ${CATALYST_ENVIRONMENT:Production}
+      folder-id: ${CATALYST_FOLDER_ID:}
   cors:
     web-app-origin: ${WEB_APP_ORIGIN:http://localhost:5173}
 

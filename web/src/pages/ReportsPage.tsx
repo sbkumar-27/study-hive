@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { reportsApi } from '../api/reports'
 import { ErrorBanner } from '../components/ErrorBanner'
 import { EmptyState } from '../components/EmptyState'
+import { Icon } from '../components/Icon'
 import { Pagination } from '../components/Pagination'
 import { Spinner } from '../components/Spinner'
 import type { ReportStatus } from '../types'
@@ -20,61 +21,68 @@ export function ReportsPage() {
 
   return (
     <div className="stack">
-      <h1>Pending reports</h1>
-      <p className="hint">
-        Shows all pending reports if you're an admin, or reports for communities you own/moderate otherwise.
-      </p>
+      <div className="page-header" style={{ marginBottom: 0 }}>
+        <div>
+          <h1>Pending reports</h1>
+          <p className="page-subtitle">
+            Shows all pending reports if you're an admin, or reports for communities you own/moderate otherwise.
+          </p>
+        </div>
+      </div>
 
       <ErrorBanner error={query.error} />
       {query.isLoading && <Spinner />}
 
       {query.data && query.data.content.length === 0 && (
-        <EmptyState title="No pending reports" hint="Nothing needs your attention right now." />
+        <EmptyState icon="check" title="No pending reports" hint="Nothing needs your attention right now." />
       )}
 
       {query.data && query.data.content.length > 0 && (
         <>
-          <table>
-            <thead>
-              <tr>
-                <th>Material</th>
-                <th>Reported by</th>
-                <th>Reason</th>
-                <th>Date</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {query.data.content.map((r) => (
-                <tr key={r.reportId}>
-                  <td>
-                    <Link to={`/materials/${r.materialId}`}>{r.materialTitle}</Link>
-                  </td>
-                  <td>{r.reportedByUsername}</td>
-                  <td>{r.reason}</td>
-                  <td className="text-sm muted">{new Date(r.createdAt).toLocaleDateString()}</td>
-                  <td>
-                    <div className="row">
-                      <button
-                        className="btn btn-sm"
-                        disabled={resolveMutation.isPending}
-                        onClick={() => resolveMutation.mutate({ id: r.reportId, status: 'REVIEWED' })}
-                      >
-                        Mark reviewed
-                      </button>
-                      <button
-                        className="btn btn-sm"
-                        disabled={resolveMutation.isPending}
-                        onClick={() => resolveMutation.mutate({ id: r.reportId, status: 'DISMISSED' })}
-                      >
-                        Dismiss
-                      </button>
-                    </div>
-                  </td>
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Material</th>
+                  <th>Reported by</th>
+                  <th>Reason</th>
+                  <th>Date</th>
+                  <th />
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {query.data.content.map((r) => (
+                  <tr key={r.reportId}>
+                    <td>
+                      <Link to={`/materials/${r.materialId}`}>{r.materialTitle}</Link>
+                    </td>
+                    <td>{r.reportedByUsername}</td>
+                    <td>{r.reason}</td>
+                    <td className="text-sm muted">{new Date(r.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      <div className="row">
+                        <button
+                          className="btn btn-sm"
+                          disabled={resolveMutation.isPending}
+                          onClick={() => resolveMutation.mutate({ id: r.reportId, status: 'REVIEWED' })}
+                        >
+                          <Icon name="check" size={13} />
+                          Mark reviewed
+                        </button>
+                        <button
+                          className="btn btn-sm"
+                          disabled={resolveMutation.isPending}
+                          onClick={() => resolveMutation.mutate({ id: r.reportId, status: 'DISMISSED' })}
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <Pagination page={query.data.page} totalPages={query.data.totalPages} onChange={setPage} />
         </>
       )}

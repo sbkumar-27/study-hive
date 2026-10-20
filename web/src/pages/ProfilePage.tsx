@@ -1,18 +1,32 @@
 import { useAuth } from '../context/AuthContext'
 
+function initialsOf(name: string): string {
+  const parts = name.trim().split(/\s+/)
+  const first = parts[0]?.[0] ?? ''
+  const last = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? '' : ''
+  return (first + last).toUpperCase() || '?'
+}
+
 export function ProfilePage() {
   const { user } = useAuth()
   if (!user) return null
 
   return (
     <div className="stack">
-      <h1>Profile</h1>
+      <div className="page-header">
+        <h1>Profile</h1>
+      </div>
       <div className="card" style={{ maxWidth: 480 }}>
-        <dl className="stack">
+        <div className="row" style={{ marginBottom: 20 }}>
+          <span className="avatar" style={{ width: 48, height: 48, fontSize: '1.1rem' }} aria-hidden="true">
+            {initialsOf(user.displayName)}
+          </span>
           <div>
-            <strong>Display name</strong>
-            <p className="muted" style={{ margin: 0 }}>{user.displayName}</p>
+            <h3 style={{ margin: 0 }}>{user.displayName}</h3>
+            <span className="badge badge-primary">{user.globalRole}</span>
           </div>
+        </div>
+        <dl className="stack">
           <div>
             <strong>Username</strong>
             <p className="muted" style={{ margin: 0 }}>{user.username}</p>
@@ -20,10 +34,6 @@ export function ProfilePage() {
           <div>
             <strong>Email</strong>
             <p className="muted" style={{ margin: 0 }}>{user.email}</p>
-          </div>
-          <div>
-            <strong>Role</strong>
-            <p className="muted" style={{ margin: 0 }}>{user.globalRole}</p>
           </div>
           <div>
             <strong>Member since</strong>

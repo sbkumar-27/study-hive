@@ -4,13 +4,16 @@ import { Link } from 'react-router-dom'
 import { communitiesApi } from '../api/communities'
 import { ErrorBanner } from '../components/ErrorBanner'
 import { EmptyState } from '../components/EmptyState'
+import { Icon } from '../components/Icon'
 import { Pagination } from '../components/Pagination'
 import { Spinner } from '../components/Spinner'
+import { useAuth } from '../context/AuthContext'
 import type { Community } from '../types'
 
 type Tab = 'browse' | 'mine'
 
 export function CommunitiesPage() {
+  const { user } = useAuth()
   const [tab, setTab] = useState<Tab>('browse')
   const [q, setQ] = useState('')
   const [page, setPage] = useState(0)
@@ -49,11 +52,17 @@ export function CommunitiesPage() {
 
   return (
     <div className="stack">
-      <div className="row-between">
-        <h1>Communities</h1>
-        <Link to="/communities/new" className="btn btn-primary">
-          Create community
-        </Link>
+      <div className="page-header">
+        <div>
+          <h1>Welcome back{user ? `, ${user.displayName}` : ''}</h1>
+          <p className="page-subtitle">Browse communities, share notes, and find the materials you need.</p>
+        </div>
+        <div className="actions">
+          <Link to="/communities/new" className="btn btn-primary">
+            <Icon name="plus" size={16} />
+            Create community
+          </Link>
+        </div>
       </div>
 
       <div className="card">
@@ -80,29 +89,54 @@ export function CommunitiesPage() {
         <ErrorBanner error={joinError} />
       </div>
 
-      <div className="row">
-        <button
-          className={`btn btn-sm ${tab === 'browse' ? 'btn-primary' : ''}`}
-          onClick={() => switchTab('browse')}
-        >
-          Browse public
-        </button>
-        <button className={`btn btn-sm ${tab === 'mine' ? 'btn-primary' : ''}`} onClick={() => switchTab('mine')}>
-          My communities
-        </button>
-      </div>
+      <div className="row-between">
+        <div className="tabs" role="tablist" aria-label="Community lists">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'browse'}
+            className={`tab-btn ${tab === 'browse' ? 'active' : ''}`}
+            onClick={() => switchTab('browse')}
+          >
+            Browse public
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'mine'}
+            className={`tab-btn ${tab === 'mine' ? 'active' : ''}`}
+            onClick={() => switchTab('mine')}
+          >
+            My communities
+          </button>
+        </div>
 
-      {tab === 'browse' && (
-        <input
-          placeholder="Search communities by name..."
-          value={q}
-          onChange={(e) => {
-            setQ(e.target.value)
-            setPage(0)
-          }}
-          style={{ maxWidth: 360 }}
-        />
-      )}
+        {tab === 'browse' && (
+          <div style={{ position: 'relative', maxWidth: 320, width: '100%' }}>
+            <span
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--color-text-faint)',
+                pointerEvents: 'none',
+              }}
+            >
+              <Icon name="search" size={16} />
+            </span>
+            <input
+              placeholder="Search communities by name..."
+              value={q}
+              onChange={(e) => {
+                setQ(e.target.value)
+                setPage(0)
+              }}
+              style={{ paddingLeft: 34 }}
+            />
+          </div>
+        )}
+      </div>
 
       <ErrorBanner error={query.error} />
 
@@ -110,6 +144,7 @@ export function CommunitiesPage() {
 
       {query.data && query.data.content.length === 0 && (
         <EmptyState
+          icon="communities"
           title={tab === 'browse' ? 'No public communities found' : "You haven't joined any communities yet"}
           hint={tab === 'browse' ? 'Try a different search, or create your own.' : 'Browse public communities or join one with a code.'}
         />
@@ -132,9 +167,26 @@ export function CommunitiesPage() {
 function CommunityCard({ community }: { community: Community }) {
   return (
     <Link to={`/communities/${community.communityId}`} className="card card-link">
-      <div className="row-between" style={{ marginBottom: 8 }}>
-        <h3 style={{ margin: 0 }}>{community.name}</h3>
-        {community.communityType === 'PRIVATE' && <span className="badge">Private</span>}
+      <div className="row" style={{ marginBottom: 10, alignItems: 'flex-start' }}>
+        <span className="card-icon">
+          <Icon name={community.communityType === 'PRIVATE' ? 'lock' : 'globe'} size={18} />
+        </span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="row-between" style={{ gap: 8 }}>
+            <h3 style={{ margin: 0 }}>{community.name}</h3>
+            {community.communityType === 'PRIVATE' ? (
+              <span className="badge badge-warning">
+                <Icon name="lock" size={11} />
+                Private
+              </span>
+            ) : (
+              <span className="badge">
+                <Icon name="globe" size={11} />
+                Public
+              </span>
+            )}
+          </div>
+        </div>
       </div>
       {community.description && <p className="text-sm muted">{community.description}</p>}
       <div className="row text-sm muted">
