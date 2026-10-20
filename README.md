@@ -59,10 +59,13 @@ for day-to-day setup commands.
 
 ## Status
 
-This project is being built in stages (database → backend → storage → web
-→ desktop → integration → tests). Current stage: **foundation** complete,
-**backend** in progress. See `docs/development-guide.md` for the detailed
-build order and what is verified to work so far.
+This project is being built per-component on its own feature branch
+(`feature/database`, `feature/backend`, `feature/web`, `feature/desktop`),
+integrated into `main` once each is reviewed. On this branch
+(`feature/web`): foundation and the full React web client are complete
+and verified against the real backend + MySQL. The backend itself (with
+its own verification) lives on `feature/backend`; desktop hasn't started
+yet. See `docs/development-guide.md` for the detailed status log.
 
 ## Security notes
 

@@ -42,7 +42,7 @@ Run the backend first; both clients need it.
 ```bash
 cd backend && mvn test
 cd ..\desktop && mvn test
-cd ..\web && npm test
+cd ..\web && npm run build   REM no frontend test suite yet; this at least typechecks + bundles
 ```
 
 ## Status log
@@ -55,3 +55,19 @@ not what was merely written.
   DB — all 10 tables already matched; only the `popular_materials` view
   was added), docs skeletons, `.env.example`, `.gitignore`. Not yet built
   or run (no application code exists yet).
+- **2026-10-20** — Web stage complete on `feature/web`: full React +
+  TypeScript + Vite client (auth, communities, subjects, materials +
+  versions, vault, favorites, question papers, reports, profile).
+  `npm run build` passes (typecheck + production bundle). Manually
+  clicked through the entire app against the real backend + MySQL: register,
+  login, logout, protected-route redirect, create a public and a
+  password-protected private community, join by code (wrong code, wrong
+  password, and correct password all behave correctly), add a subject,
+  upload/search/view/download/favorite/edit a material, confirmed version
+  history is append-only in the UI, and confirmed empty states. Along the
+  way, found and fixed two real bugs: the material detail page's view
+  count didn't refresh after recording a view (now invalidates the query),
+  and a `.gitignore` bug (`storage/`/`uploads/` with no anchoring slash
+  matched the backend's `storage` *source package* at any depth, silently
+  excluding 4 files from every commit on `feature/backend` despite local
+  tests passing) — fixed on every branch, see `backend/README.md`.
