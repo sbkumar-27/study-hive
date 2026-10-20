@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.studyhive.desktop.controller.CommunityDetailController"
+            fitToWidth="true" styleClass="page-root">
+    <VBox spacing="16" styleClass="page-root">
+        <padding><Insets top="20" right="24" bottom="24" left="24"/></padding>
+
+        <HBox alignment="CENTER_LEFT">
+            <VBox spacing="4">
+                <Label fx:id="nameLabel" styleClass="h1"/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label fx:id="typeBadge" styleClass="badge"/>
+                    <Label fx:id="metaLabel" styleClass="muted text-sm"/>
+                </HBox>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="leaveButton" text="Leave community" styleClass="button-danger" onAction="#handleLeave"/>
+        </HBox>
+
+        <Label fx:id="descriptionLabel" wrapText="true"/>
+
+        <VBox fx:id="joinCodeBox" styleClass="card" spacing="4" visible="false" managed="false">
+            <Label fx:id="joinCodeLabel" style="-fx-font-weight: bold;"/>
+            <Label text="Share this code with friends so they can join." styleClass="muted text-sm"/>
+        </VBox>
+
+        <VBox fx:id="notMemberBox" styleClass="alert-banner" visible="false" managed="false">
+            <Label text="You're viewing limited public information. Join this community (using its join code from the Communities page) to see subjects, members, and materials."
+                   styleClass="alert-banner-text" wrapText="true"/>
+        </VBox>
+
+        <VBox fx:id="memberContent" spacing="16" visible="false" managed="false">
+            <HBox alignment="CENTER_LEFT">
+                <Label text="Subjects" styleClass="h2"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="addSubjectToggle" text="Add subject" onAction="#toggleSubjectForm"/>
+            </HBox>
+
+            <HBox fx:id="subjectForm" spacing="8" styleClass="card" visible="false" managed="false" alignment="CENTER_LEFT">
+                <TextField fx:id="subjectCodeField" promptText="Code (e.g. CS301)" prefWidth="140"/>
+                <TextField fx:id="subjectNameField" promptText="Name (e.g. Data Structures)" prefWidth="240"/>
+                <Button text="Add" styleClass="button-primary" onAction="#handleAddSubject"/>
+            </HBox>
+            <Label fx:id="subjectErrorLabel" styleClass="alert-banner-text" visible="false" managed="false"/>
+
+            <FlowPane fx:id="subjectsContainer" hgap="12" vgap="12"/>
+            <Label fx:id="noSubjectsLabel" text="No subjects yet. Add the first subject for this community." styleClass="muted" visible="false" managed="false"/>
+
+            <HBox spacing="12">
+                <Button text="Browse all materials" styleClass="button-primary" onAction="#handleBrowseMaterials"/>
+                <Button text="Upload material" onAction="#handleUploadMaterial"/>
+            </HBox>
+
+            <Label text="Members" styleClass="h2"/>
+            <TableView fx:id="membersTable" prefHeight="220">
+                <columns>
+                    <TableColumn fx:id="memberNameColumn" text="Name" prefWidth="160"/>
+                    <TableColumn fx:id="memberUsernameColumn" text="Username" prefWidth="140"/>
+                    <TableColumn fx:id="memberRoleColumn" text="Role" prefWidth="100"/>
+                    <TableColumn fx:id="memberJoinedColumn" text="Joined" prefWidth="140"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </VBox>
+</ScrollPane>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.studyhive.desktop.controller.ProfileController"
+      spacing="16" styleClass="page-root">
+    <padding><Insets top="20" right="24" bottom="24" left="24"/></padding>
+
+    <Label text="Profile" styleClass="h1"/>
+
+    <VBox styleClass="card" spacing="12" maxWidth="420">
+        <VBox spacing="2">
+            <Label text="Display name" styleClass="field-label"/>
+            <Label fx:id="displayNameLabel" styleClass="muted"/>
+        </VBox>
+        <VBox spacing="2">
+            <Label text="Username" styleClass="field-label"/>
+            <Label fx:id="usernameLabel" styleClass="muted"/>
+        </VBox>
+        <VBox spacing="2">
+            <Label text="Email" styleClass="field-label"/>
+            <Label fx:id="emailLabel" styleClass="muted"/>
+        </VBox>
+        <VBox spacing="2">
+            <Label text="Role" styleClass="field-label"/>
+            <Label fx:id="roleLabel" styleClass="muted"/>
+        </VBox>
+        <VBox spacing="2">
+            <Label text="Member since" styleClass="field-label"/>
+            <Label fx:id="memberSinceLabel" styleClass="muted"/>
+        </VBox>
+    </VBox>
+</VBox>

@@ -1,0 +1,42 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: studyhive-backend
+  datasource:
+    # yearIsDateType=false: the question_papers.exam_year column is a MySQL YEAR; without this,
+    # Connector/J reports it to Hibernate as java.sql.Date, and writing a converted Date back
+    # into it fails under strict SQL mode ("Data truncated for column 'exam_year'"). With it off,
+    # the driver treats YEAR as a SMALLINT, matching the entity's Short mapping below.
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:studyhive}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&yearIsDateType=false
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: ${MAX_UPLOAD_SIZE_MB:25}MB
+      max-request-size: ${MAX_UPLOAD_SIZE_MB:25}MB
+
+studyhive:
+  jwt:
+    secret: ${JWT_SECRET:dev-only-insecure-secret-change-me-please-change-me-now-32bytes}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  storage:
+    root: ${STORAGE_ROOT:./storage}
+    max-upload-size-mb: ${MAX_UPLOAD_SIZE_MB:25}
+    allowed-extensions: pdf,doc,docx,ppt,pptx,txt,png,jpg,jpeg
+  cors:
+    web-app-origin: ${WEB_APP_ORIGIN:http://localhost:5173}
+
+logging:
+  level:
+    com.studyhive: INFO

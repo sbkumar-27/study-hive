@@ -42,7 +42,7 @@ Run the backend first; both clients need it.
 ```bash
 cd backend && mvn test
 cd ..\desktop && mvn test
-cd ..\web && npm test
+cd ..\web && npm run build   REM no frontend test suite yet; this at least typechecks + bundles
 ```
 
 ## Status log
@@ -55,3 +55,45 @@ not what was merely written.
   DB — all 10 tables already matched; only the `popular_materials` view
   was added), docs skeletons, `.env.example`, `.gitignore`. Not yet built
   or run (no application code exists yet).
+- **2026-10-19/20** — Backend stage complete: full Spring Boot 4 REST API
+  (auth, communities, subjects, materials + versioning, favorites, views,
+  question papers, reports) on `feature/backend`. `mvn test` passes (12
+  tests: access-control unit tests + one MockMvc end-to-end test on H2).
+  Additionally hand-verified the full golden path against the real local
+  MySQL `studyhive` database with `scripts\dev-backend.bat` + curl:
+  register/login, create a public community and a password-protected
+  private one, join both (and confirmed a wrong/missing password is
+  rejected), create a subject, upload a material and a question paper,
+  search/filter, download, add a second file version (first version still
+  retained), favorite/unfavorite, record a view, leave a community
+  (blocked for the owner), submit and resolve a report, and confirmed a
+  non-member gets 403 on a community material and on another user's
+  Personal Vault item. See `backend/README.md` for the MySQL/JDBC/Spring
+  Boot 4 quirks this surfaced (Jackson 3, `-parameters`, YEAR/TINYINT
+  column mapping) and exactly how each was fixed.
+- **2026-10-20** — Web stage complete on `feature/web`: full React +
+  TypeScript + Vite client (auth, communities, subjects, materials +
+  versions, vault, favorites, question papers, reports, profile).
+  `npm run build` passes (typecheck + production bundle). Manually
+  clicked through the entire app against the real backend + MySQL: register,
+  login, logout, protected-route redirect, create a public and a
+  password-protected private community, join by code (wrong code, wrong
+  password, and correct password all behave correctly), add a subject,
+  upload/search/view/download/favorite/edit a material, confirmed version
+  history is append-only in the UI, and confirmed empty states. Along the
+  way, found and fixed two real bugs: the material detail page's view
+  count didn't refresh after recording a view (now invalidates the query),
+  and a `.gitignore` bug (`storage/`/`uploads/` with no anchoring slash
+  matched the backend's `storage` *source package* at any depth, silently
+  excluding 4 files from every commit on `feature/backend` despite local
+  tests passing) — fixed on every branch, see `backend/README.md`.
+- **2026-10-20** — Desktop stage complete on `feature/desktop`: full
+  JavaFX 21 client (login/register, communities, subjects, materials +
+  versions, vault, favorites, question papers, reports, profile), reusing
+  the same REST API contract as the web client. `mvn compile` passes (83
+  classes). Launched with `mvn javafx:run` against the real backend +
+  MySQL: starts with no exceptions, JavaFX native graphics load correctly,
+  window opens with the right title. This session has no GUI automation
+  tools for desktop apps (only the browser), so unlike the backend and
+  web client, the screens were not clicked through end-to-end — see
+  `desktop/README.md` for exactly what was and wasn't verified.
