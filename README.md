@@ -59,10 +59,15 @@ for day-to-day setup commands.
 
 ## Status
 
-This project is being built in stages (database → backend → storage → web
-→ desktop → integration → tests). Current stage: **foundation** complete,
-**backend** in progress. See `docs/development-guide.md` for the detailed
-build order and what is verified to work so far.
+This project is being built per-component on its own feature branch
+(`feature/database`, `feature/backend`, `feature/web`, `feature/desktop`),
+integrated into `main` once each is reviewed. On this branch
+(`feature/desktop`): foundation and the full JavaFX desktop client are
+complete; it starts cleanly against the real backend but (unlike the
+backend and web client) hasn't been clicked through screen-by-screen --
+see `desktop/README.md`. The backend lives on `feature/backend`, the web
+client on `feature/web`, each with its own verification. See
+`docs/development-guide.md` for the detailed status log.
 
 ## Security notes
 

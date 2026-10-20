@@ -1,0 +1,234 @@
+* {
+    -color-bg: #f6f7fb;
+    -color-surface: #ffffff;
+    -color-border: #e2e5ec;
+    -color-text: #1b1f2a;
+    -color-text-muted: #5b6273;
+    -color-primary: #3858e9;
+    -color-primary-hover: #2d47c9;
+    -color-danger: #d1394a;
+    -color-danger-bg: #fdecee;
+    -color-success: #1f8a4c;
+    -color-success-bg: #e9f7ef;
+}
+
+.root {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-background-color: -color-bg;
+    -fx-text-fill: -color-text;
+}
+
+.page-root {
+    -fx-background-color: -color-bg;
+}
+
+/* === Navbar === */
+.navbar {
+    -fx-background-color: -color-surface;
+    -fx-border-color: transparent transparent -color-border transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 12 20;
+    -fx-spacing: 20;
+    -fx-alignment: center-left;
+}
+
+.navbar-brand {
+    -fx-font-size: 18px;
+    -fx-font-weight: 800;
+    -fx-text-fill: -color-text;
+}
+
+.nav-link {
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-muted;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+    -fx-padding: 4 2;
+}
+
+.nav-link:hover {
+    -fx-text-fill: -color-primary;
+}
+
+/* === Typography === */
+.h1 {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+}
+
+.h2 {
+    -fx-font-size: 18px;
+    -fx-font-weight: 700;
+}
+
+.h3 {
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+}
+
+.muted {
+    -fx-text-fill: -color-text-muted;
+}
+
+.text-sm {
+    -fx-font-size: 11.5px;
+}
+
+.hint {
+    -fx-text-fill: -color-text-muted;
+    -fx-font-size: 11.5px;
+}
+
+/* === Cards === */
+.card {
+    -fx-background-color: -color-surface;
+    -fx-border-color: -color-border;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 16;
+    -fx-spacing: 8;
+}
+
+.card:hover {
+    -fx-border-color: -color-primary;
+    -fx-cursor: hand;
+}
+
+/* === Buttons === */
+.button {
+    -fx-background-color: -color-surface;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 8 16;
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+    -fx-text-fill: -color-text;
+}
+
+.button:hover {
+    -fx-border-color: -color-primary;
+}
+
+.button-primary {
+    -fx-background-color: -color-primary;
+    -fx-border-color: -color-primary;
+    -fx-text-fill: white;
+}
+
+.button-primary:hover {
+    -fx-background-color: -color-primary-hover;
+    -fx-border-color: -color-primary-hover;
+}
+
+.button-danger {
+    -fx-background-color: -color-danger-bg;
+    -fx-border-color: -color-danger-bg;
+    -fx-text-fill: -color-danger;
+}
+
+.button:disabled {
+    -fx-opacity: 0.6;
+}
+
+/* === Inputs === */
+.text-field, .password-field, .text-area, .combo-box {
+    -fx-background-color: -color-surface;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 6 10;
+}
+
+.text-field:focused, .password-field:focused, .text-area:focused, .combo-box:focused {
+    -fx-border-color: -color-primary;
+}
+
+.field-label {
+    -fx-font-weight: 600;
+    -fx-font-size: 12px;
+}
+
+/* === Badges === */
+.badge {
+    -fx-background-color: -color-border;
+    -fx-text-fill: -color-text-muted;
+    -fx-background-radius: 999;
+    -fx-padding: 2 10;
+    -fx-font-size: 10.5px;
+    -fx-font-weight: 700;
+}
+
+.badge-primary {
+    -fx-background-color: #e8ecff;
+    -fx-text-fill: -color-primary;
+}
+
+.badge-success {
+    -fx-background-color: -color-success-bg;
+    -fx-text-fill: -color-success;
+}
+
+.badge-warning {
+    -fx-background-color: #fff6e0;
+    -fx-text-fill: #8a6300;
+}
+
+/* === Alerts (inline banners, not dialogs) === */
+.alert-banner {
+    -fx-background-color: -color-danger-bg;
+    -fx-background-radius: 8;
+    -fx-padding: 10 14;
+}
+
+.alert-banner-text {
+    -fx-text-fill: -color-danger;
+}
+
+.success-banner {
+    -fx-background-color: -color-success-bg;
+    -fx-background-radius: 8;
+    -fx-padding: 10 14;
+}
+
+.success-banner-text {
+    -fx-text-fill: -color-success;
+}
+
+/* === Tables / lists === */
+.table-view {
+    -fx-background-color: -color-surface;
+    -fx-border-color: -color-border;
+    -fx-border-radius: 8;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: -color-bg;
+    -fx-background-radius: 8 8 0 0;
+}
+
+.table-view .column-header-background .label {
+    -fx-text-fill: -color-text-muted;
+    -fx-font-weight: 600;
+}
+
+.list-view {
+    -fx-background-color: transparent;
+}
+
+/* === Misc === */
+.separator-line {
+    -fx-border-color: -color-border;
+    -fx-border-width: 1 0 0 0;
+}
+
+.empty-state-title {
+    -fx-font-weight: 700;
+    -fx-text-fill: -color-text;
+}
+
+.scroll-pane, .scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}

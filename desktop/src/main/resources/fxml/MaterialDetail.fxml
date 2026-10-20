@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.studyhive.desktop.controller.MaterialDetailController"
+            fitToWidth="true" styleClass="page-root">
+    <VBox spacing="16" styleClass="page-root">
+        <padding><Insets top="20" right="24" bottom="24" left="24"/></padding>
+
+        <VBox fx:id="viewBox" spacing="10">
+            <HBox alignment="CENTER_LEFT">
+                <Label fx:id="titleLabel" styleClass="h1" wrapText="true"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button fx:id="favoriteButton" onAction="#handleToggleFavorite"/>
+                <Button text="Download latest" styleClass="button-primary" onAction="#handleDownloadLatest"/>
+            </HBox>
+
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <Label fx:id="typeBadge" styleClass="badge"/>
+                <Label fx:id="subjectLabel" styleClass="muted text-sm"/>
+                <Label fx:id="metaLabel" styleClass="muted text-sm"/>
+            </HBox>
+
+            <Label fx:id="descriptionLabel" wrapText="true"/>
+            <Label fx:id="bookAuthorLabel" styleClass="muted text-sm"/>
+
+            <HBox spacing="10">
+                <Button fx:id="editButton" text="Edit details" onAction="#handleStartEdit"/>
+                <Button fx:id="reportButton" text="Report this material" onAction="#toggleReportForm"/>
+            </HBox>
+
+            <HBox fx:id="reportForm" spacing="8" styleClass="card" visible="false" managed="false" alignment="CENTER_LEFT">
+                <TextField fx:id="reportReasonField" promptText="Reason for reporting" HBox.hgrow="ALWAYS"/>
+                <Button text="Submit report" styleClass="button-danger" onAction="#handleSubmitReport"/>
+            </HBox>
+            <Label fx:id="reportStatusLabel" styleClass="muted text-sm" visible="false" managed="false"/>
+        </VBox>
+
+        <VBox fx:id="editBox" styleClass="card" spacing="12" maxWidth="560" visible="false" managed="false">
+            <Label text="Edit material" styleClass="h2"/>
+            <VBox fx:id="editErrorBox" styleClass="alert-banner" visible="false" managed="false">
+                <Label fx:id="editErrorLabel" styleClass="alert-banner-text" wrapText="true"/>
+            </VBox>
+            <VBox spacing="4">
+                <Label text="Title" styleClass="field-label"/>
+                <TextField fx:id="editTitleField"/>
+            </VBox>
+            <VBox spacing="4">
+                <Label text="Description" styleClass="field-label"/>
+                <TextArea fx:id="editDescriptionField" prefRowCount="3" wrapText="true"/>
+            </VBox>
+            <VBox spacing="4">
+                <Label text="Book name" styleClass="field-label"/>
+                <TextField fx:id="editBookNameField"/>
+            </VBox>
+            <VBox spacing="4">
+                <Label text="Author" styleClass="field-label"/>
+                <TextField fx:id="editAuthorField"/>
+            </VBox>
+            <HBox spacing="10">
+                <Button text="Save changes" styleClass="button-primary" onAction="#handleSaveEdit"/>
+                <Button text="Cancel" onAction="#handleCancelEdit"/>
+            </HBox>
+        </VBox>
+
+        <Region style="-fx-min-height: 1; -fx-max-height: 1;" styleClass="separator-line"/>
+
+        <HBox alignment="CENTER_LEFT">
+            <Label text="Version history" styleClass="h2"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="addVersionToggle" text="Upload new version" onAction="#toggleVersionForm"/>
+        </HBox>
+
+        <VBox fx:id="versionForm" styleClass="card" spacing="10" visible="false" managed="false">
+            <VBox fx:id="versionErrorBox" styleClass="alert-banner" visible="false" managed="false">
+                <Label fx:id="versionErrorLabel" styleClass="alert-banner-text" wrapText="true"/>
+            </VBox>
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <Button text="Choose file..." onAction="#handleChooseVersionFile"/>
+                <Label fx:id="versionFileNameLabel" text="No file chosen" styleClass="muted text-sm"/>
+            </HBox>
+            <TextField fx:id="versionNotesField" promptText="What changed? (optional)"/>
+            <Button text="Upload version" styleClass="button-primary" onAction="#handleUploadVersion"/>
+            <Label text="This adds a new version without deleting any previous ones." styleClass="hint"/>
+        </VBox>
+
+        <TableView fx:id="versionsTable" prefHeight="240">
+            <columns>
+                <TableColumn fx:id="versionNumberColumn" text="Version" prefWidth="70"/>
+                <TableColumn fx:id="versionFileColumn" text="File" prefWidth="160"/>
+                <TableColumn fx:id="versionSizeColumn" text="Size" prefWidth="80"/>
+                <TableColumn fx:id="versionUploaderColumn" text="Uploaded by" prefWidth="110"/>
+                <TableColumn fx:id="versionDateColumn" text="Date" prefWidth="140"/>
+                <TableColumn fx:id="versionNotesColumn" text="Notes" prefWidth="180"/>
+                <TableColumn fx:id="versionDownloadColumn" text="" prefWidth="100"/>
+            </columns>
+        </TableView>
+    </VBox>
+</ScrollPane>

@@ -55,3 +55,13 @@ not what was merely written.
   DB — all 10 tables already matched; only the `popular_materials` view
   was added), docs skeletons, `.env.example`, `.gitignore`. Not yet built
   or run (no application code exists yet).
+- **2026-10-20** — Desktop stage complete on `feature/desktop`: full
+  JavaFX 21 client (login/register, communities, subjects, materials +
+  versions, vault, favorites, question papers, reports, profile), reusing
+  the same REST API contract as the web client. `mvn compile` passes (83
+  classes). Launched with `mvn javafx:run` against the real backend +
+  MySQL: starts with no exceptions, JavaFX native graphics load correctly,
+  window opens with the right title. This session has no GUI automation
+  tools for desktop apps (only the browser), so unlike the backend and
+  web client, the screens were not clicked through end-to-end — see
+  `desktop/README.md` for exactly what was and wasn't verified.

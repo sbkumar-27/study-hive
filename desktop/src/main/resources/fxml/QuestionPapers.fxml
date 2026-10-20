@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.studyhive.desktop.controller.QuestionPapersController"
+      spacing="16" styleClass="page-root">
+    <padding><Insets top="20" right="24" bottom="24" left="24"/></padding>
+
+    <Label text="Question papers" styleClass="h1"/>
+    <Label text="Filter by subject ID (find it on a community's subject card), exam year, exam type, or semester."
+           styleClass="hint" wrapText="true"/>
+
+    <HBox spacing="10">
+        <TextField fx:id="subjectIdField" promptText="Subject ID" prefWidth="100"/>
+        <TextField fx:id="examYearField" promptText="Exam year" prefWidth="100"/>
+        <TextField fx:id="examTypeField" promptText="Exam type (e.g. END_SEM)" prefWidth="180"/>
+        <TextField fx:id="semesterField" promptText="Semester" prefWidth="100"/>
+        <Button text="Search" styleClass="button-primary" onAction="#handleSearch"/>
+    </HBox>
+
+    <Label fx:id="statusLabel" styleClass="muted"/>
+
+    <TableView fx:id="resultsTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="titleColumn" text="Title" prefWidth="260"/>
+            <TableColumn fx:id="subjectColumn" text="Subject" prefWidth="100"/>
+            <TableColumn fx:id="yearColumn" text="Year" prefWidth="80"/>
+            <TableColumn fx:id="typeColumn" text="Type" prefWidth="120"/>
+            <TableColumn fx:id="semesterColumn" text="Semester" prefWidth="90"/>
+        </columns>
+    </TableView>
+
+    <HBox spacing="12" alignment="CENTER">
+        <Button fx:id="prevButton" text="Previous" onAction="#handlePrevPage"/>
+        <Label fx:id="pageLabel" styleClass="muted text-sm"/>
+        <Button fx:id="nextButton" text="Next" onAction="#handleNextPage"/>
+    </HBox>
+</VBox>

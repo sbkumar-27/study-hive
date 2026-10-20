@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.studyhive.desktop.controller.MainShellController"
+            styleClass="page-root">
+    <top>
+        <HBox styleClass="navbar">
+            <Hyperlink text="StudyHive" styleClass="navbar-brand" onAction="#goCommunities"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="Communities" styleClass="nav-link" onAction="#goCommunities"/>
+            <Button text="My Vault" styleClass="nav-link" onAction="#goVault"/>
+            <Button text="Question Papers" styleClass="nav-link" onAction="#goQuestionPapers"/>
+            <Button text="Reports" styleClass="nav-link" onAction="#goReports"/>
+            <Button fx:id="profileButton" text="Profile" styleClass="nav-link" onAction="#goProfile"/>
+            <Button text="Log out" onAction="#handleLogout"/>
+        </HBox>
+    </top>
+    <center>
+        <StackPane fx:id="contentArea" styleClass="page-root"/>
+    </center>
+</BorderPane>

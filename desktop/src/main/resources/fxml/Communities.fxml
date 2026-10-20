@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.studyhive.desktop.controller.CommunitiesController"
+      spacing="16" styleClass="page-root">
+    <padding><Insets top="20" right="24" bottom="24" left="24"/></padding>
+
+    <HBox alignment="CENTER_LEFT">
+        <Label text="Communities" styleClass="h1"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Create community" styleClass="button-primary" onAction="#handleCreate"/>
+    </HBox>
+
+    <VBox styleClass="card" spacing="8">
+        <Label text="Have a join code?" styleClass="h3"/>
+        <HBox spacing="8" alignment="CENTER_LEFT">
+            <TextField fx:id="joinCodeField" promptText="Join code" prefWidth="160"/>
+            <PasswordField fx:id="joinPasswordField" promptText="Password (if required)" prefWidth="200"/>
+            <Button text="Join" styleClass="button-primary" onAction="#handleJoin"/>
+        </HBox>
+        <VBox fx:id="joinErrorBox" styleClass="alert-banner" visible="false" managed="false">
+            <Label fx:id="joinErrorLabel" styleClass="alert-banner-text" wrapText="true"/>
+        </VBox>
+    </VBox>
+
+    <HBox spacing="8">
+        <Button fx:id="browseTabButton" text="Browse public" onAction="#showBrowseTab"/>
+        <Button fx:id="mineTabButton" text="My communities" onAction="#showMineTab"/>
+    </HBox>
+
+    <TextField fx:id="searchField" promptText="Search communities by name..." maxWidth="320"/>
+
+    <Label fx:id="statusLabel" styleClass="muted"/>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="scroll-pane">
+        <FlowPane fx:id="cardsContainer" hgap="16" vgap="16"/>
+    </ScrollPane>
+
+    <HBox spacing="12" alignment="CENTER">
+        <Button fx:id="prevButton" text="Previous" onAction="#handlePrevPage"/>
+        <Label fx:id="pageLabel" styleClass="muted text-sm"/>
+        <Button fx:id="nextButton" text="Next" onAction="#handleNextPage"/>
+    </HBox>
+</VBox>
