@@ -59,12 +59,13 @@ for day-to-day setup commands.
 
 ## Status
 
-This project is being built in stages (database → backend → storage → web
-→ desktop → integration → tests). Current stage: **foundation** and
-**backend** (including file storage/versioning) complete and verified
-against the real local MySQL database; **web** and **desktop** clients
-not yet started. See `docs/development-guide.md` for the detailed status
-log and `backend/README.md` for what was tested and how.
+Foundation, backend, and the web client are complete and verified
+(backend: automated tests + a full manual walkthrough against the real
+MySQL database; web: `npm run build` + a full manual click-through
+against the real backend). Desktop is being merged in next. See
+`docs/development-guide.md` for the detailed status log, and
+`backend/README.md` / `web/README.md` for exactly what was tested and
+how.
 
 ## Security notes
 
