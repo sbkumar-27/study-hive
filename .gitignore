@@ -24,11 +24,13 @@ web/coverage/
 web/.vite/
 
 # === Uploaded files (never commit user content) ===
-storage/
-uploads/
-backend/storage/
-backend/uploads/
-backend/build-test-storage/
+# NOTE: these must stay anchored (contain a "/" in the middle) -- a bare
+# "storage/" or "uploads/" pattern matches a directory with that name at
+# ANY depth, including backend/.../storage, the Java *source* package for
+# the storage provider interface, silently excluding it from git.
+/backend/storage/
+/backend/uploads/
+/backend/build-test-storage/
 
 # === Logs ===
 *.log
