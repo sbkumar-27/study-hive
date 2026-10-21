@@ -135,26 +135,41 @@ public class MaterialController {
             @PathVariable Long versionId,
             @AuthenticationPrincipal AppUserPrincipal principal) {
         MaterialVersion version = materialService.getVersionForDownload(id, versionId, principal.getUserId());
-        return toDownloadResponse(version);
+        return toFileResponse(version, false);
     }
 
     @GetMapping("/{id}/download")
     public ResponseEntity<Resource> downloadLatest(
             @PathVariable Long id, @AuthenticationPrincipal AppUserPrincipal principal) {
         MaterialVersion version = materialService.getLatestVersionForDownload(id, principal.getUserId());
-        return toDownloadResponse(version);
+        return toFileResponse(version, false);
     }
 
-    private ResponseEntity<Resource> toDownloadResponse(MaterialVersion version) {
+    /**
+     * Same access checks and storage resolution as download, but {@code Content-Disposition: inline}
+     * so the browser renders the file (PDF/image/text viewer) instead of saving it. The frontend
+     * fetches this with the JWT and builds a same-origin blob URL from the bytes -- the browser never
+     * navigates to this URL directly, so framing it is a non-issue regardless of X-Frame-Options.
+     */
+    @GetMapping("/{id}/versions/{versionId}/preview")
+    public ResponseEntity<Resource> previewVersion(
+            @PathVariable Long id,
+            @PathVariable Long versionId,
+            @AuthenticationPrincipal AppUserPrincipal principal) {
+        MaterialVersion version = materialService.getVersionForDownload(id, versionId, principal.getUserId());
+        return toFileResponse(version, true);
+    }
+
+    private ResponseEntity<Resource> toFileResponse(MaterialVersion version, boolean inline) {
         Resource resource = storageProviderRegistry
                 .resolve(version.getStorageProvider())
                 .retrieve(version.getStorageKey());
         MediaType mediaType = version.getMimeType() != null
                 ? MediaType.parseMediaType(version.getMimeType())
                 : MediaType.APPLICATION_OCTET_STREAM;
-        ContentDisposition disposition = ContentDisposition.attachment()
-                .filename(version.getOriginalFileName())
-                .build();
+        ContentDisposition.Builder dispositionBuilder =
+                inline ? ContentDisposition.inline() : ContentDisposition.attachment();
+        ContentDisposition disposition = dispositionBuilder.filename(version.getOriginalFileName()).build();
         return ResponseEntity.ok()
                 .contentType(mediaType)
                 .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())

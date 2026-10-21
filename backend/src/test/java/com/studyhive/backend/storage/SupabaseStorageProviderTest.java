@@ -38,7 +38,10 @@ class SupabaseStorageProviderTest {
         supabaseProperties.setBucket("materials");
 
         storageProperties = new StorageProperties();
-        provider = new SupabaseStorageProvider(storageProperties, supabaseProperties);
+        // enforceSupabaseHost=false: a loopback test server can never itself be *.supabase.co.
+        // The real *.supabase.co enforcement is covered separately below, against the production
+        // (2-arg) constructor, with no network call involved.
+        provider = new SupabaseStorageProvider(storageProperties, supabaseProperties, false);
     }
 
     @AfterEach
@@ -172,5 +175,67 @@ class SupabaseStorageProviderTest {
     @Test
     void getType_returnsSupabase() {
         assertThat(provider.getType()).isEqualTo(com.studyhive.backend.entity.StorageProviderType.SUPABASE);
+    }
+
+    @Test
+    void store_rejectsAUrlThatIsNotASupabaseProjectHost_beforeEverCallingTheNetwork() {
+        SupabaseProperties wrongHost = new SupabaseProperties();
+        wrongHost.setUrl("https://example.com");
+        wrongHost.setServiceKey("test-service-key");
+        wrongHost.setBucket("materials");
+        // Production (2-arg) constructor -- the real enforcement path, no loopback-server escape hatch.
+        SupabaseStorageProvider strict = new SupabaseStorageProvider(new StorageProperties(), wrongHost);
+        MockMultipartFile file = new MockMultipartFile("file", "note.pdf", "application/pdf", "x".getBytes());
+
+        assertThatThrownBy(() -> strict.store(file))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("supabase.co");
+    }
+
+    @Test
+    void requireSupabaseHost_acceptsARealSupabaseProjectHost_noNetworkCallInvolved() {
+        // Pure function, no HTTP call -- just proves well-formed *.supabase.co URLs pass.
+        org.assertj.core.api.Assertions.assertThatCode(
+                        () -> SupabaseStorageProvider.requireSupabaseHost("https://abcdefghijkl.supabase.co"))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void requireSupabaseHost_rejectsNonSupabaseHosts() {
+        assertThatThrownBy(() -> SupabaseStorageProvider.requireSupabaseHost("https://example.com"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("supabase.co");
+    }
+
+    @Test
+    void store_htmlResponseOn200_isTreatedAsFailure_notSavedAsAFile() {
+        server.createContext("/storage/v1/object/materials/", exchange -> {
+            String body = "<html><body>Not Found</body></html>";
+            exchange.getResponseHeaders().add("Content-Type", "text/html; charset=utf-8");
+            exchange.sendResponseHeaders(200, body.length());
+            exchange.getResponseBody().write(body.getBytes());
+            exchange.getResponseBody().close();
+        });
+
+        MockMultipartFile file = new MockMultipartFile("file", "notes.pdf", "application/pdf", "hello".getBytes());
+
+        assertThatThrownBy(() -> provider.store(file))
+                .isInstanceOf(SupabaseStorageException.class)
+                .hasMessageContaining("text/html");
+    }
+
+    @Test
+    void retrieve_htmlResponseOn200_isTreatedAsFailure_notReturnedAsFileContent() {
+        server.createContext("/storage/v1/object/materials/2026/10/abc.txt", exchange -> {
+            String body = "<html><body>wrong host</body></html>";
+            exchange.getResponseHeaders().add("Content-Type", "text/html; charset=utf-8");
+            exchange.sendResponseHeaders(200, body.length());
+            exchange.getResponseBody().write(body.getBytes());
+            exchange.getResponseBody().close();
+        });
+
+        assertThatThrownBy(() -> provider.openStream("2026/10/abc.txt"))
+                .isInstanceOf(SupabaseStorageException.class)
+                .hasMessageContaining("text/html");
     }
 }

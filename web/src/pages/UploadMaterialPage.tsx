@@ -6,6 +6,7 @@ import { subjectsApi } from '../api/subjects'
 import { ErrorBanner } from '../components/ErrorBanner'
 import { Icon } from '../components/Icon'
 import type { MaterialType } from '../types'
+import { fileTooLargeMessage } from '../utils/upload'
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -44,6 +45,11 @@ export function UploadMaterialPage() {
     e.preventDefault()
     if (!file) {
       setError(new Error('Please choose a file to upload'))
+      return
+    }
+    const tooLarge = fileTooLargeMessage(file)
+    if (tooLarge) {
+      setError(new Error(tooLarge))
       return
     }
     setError(null)

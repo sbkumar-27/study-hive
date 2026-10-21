@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -18,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HexFormat;
 import java.util.Locale;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -31,6 +33,16 @@ import org.springframework.web.multipart.MultipartFile;
  * A local-only installation with no Supabase credentials configured must start and run normally;
  * this class only fails once something genuinely needs Supabase.
  *
+ * <p>Two defenses against a misconfigured {@code SUPABASE_URL} silently "succeeding":
+ * <ol>
+ *   <li>{@link #requireConfig()} rejects any URL whose host doesn't end in {@code .supabase.co} --
+ *       this catches a wrong URL before any network call is made.</li>
+ *   <li>Every response is checked for a 2xx status <em>and</em> a non-HTML content type. A wrong
+ *       host that still resolves (e.g. a misconfigured reverse proxy) often answers with an HTML
+ *       error/landing page on a 200 -- treating that as success would have silently "stored" a web
+ *       page as if it were the uploaded file.</li>
+ * </ol>
+ *
  * <p>Any REST/config failure is reported as a {@link SupabaseStorageException} (or {@link
  * InvalidFileException} for a bad storage key); this never falls back to local storage.
  */
@@ -42,10 +54,24 @@ public class SupabaseStorageProvider implements StorageProvider {
     private final StorageProperties storageProperties;
     private final SupabaseProperties supabaseProperties;
     private final HttpClient httpClient;
+    private final boolean enforceSupabaseHost;
 
+    @Autowired
     public SupabaseStorageProvider(StorageProperties storageProperties, SupabaseProperties supabaseProperties) {
+        this(storageProperties, supabaseProperties, true);
+    }
+
+    /**
+     * Visible for tests only: {@code enforceSupabaseHost=false} skips the {@code *.supabase.co}
+     * check so a local loopback fake server can stand in for exercising the actual upload/download
+     * /delete/exists REST logic (a test server can never itself have a real supabase.co hostname).
+     * The production constructor above always enforces the check.
+     */
+    SupabaseStorageProvider(
+            StorageProperties storageProperties, SupabaseProperties supabaseProperties, boolean enforceSupabaseHost) {
         this.storageProperties = storageProperties;
         this.supabaseProperties = supabaseProperties;
+        this.enforceSupabaseHost = enforceSupabaseHost;
         // Building an HttpClient makes no network call -- safe to do eagerly.
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(15))
@@ -58,6 +84,24 @@ public class SupabaseStorageProvider implements StorageProvider {
             throw new IllegalStateException(
                     "A Supabase storage operation was requested but studyhive.storage.supabase.{url,"
                             + "service-key,bucket} are not all set");
+        }
+        if (enforceSupabaseHost) {
+            requireSupabaseHost(supabaseProperties.getUrl());
+        }
+    }
+
+    // Package-private (not private): lets the test suite exercise this pure validation logic
+    // directly, with zero network involvement -- see SupabaseStorageProviderTest.
+    static void requireSupabaseHost(String url) {
+        String host;
+        try {
+            host = new URI(url).getHost();
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("studyhive.storage.supabase.url is not a valid URL: " + url);
+        }
+        if (host == null || !host.toLowerCase(Locale.ROOT).endsWith(".supabase.co")) {
+            throw new IllegalStateException(
+                    "studyhive.storage.supabase.url must be a *.supabase.co project URL, got: " + url);
         }
     }
 
@@ -123,9 +167,8 @@ public class SupabaseStorageProvider implements StorageProvider {
                 .build();
 
         HttpResponse<String> response = send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() != 200 && response.statusCode() != 201) {
-            throw new SupabaseStorageException(
-                    "Supabase upload failed with status " + response.statusCode() + ": " + truncate(response.body()));
+        if (!isSuccessfulNonHtml(response)) {
+            throw new SupabaseStorageException("Supabase upload failed: " + describe(response, response.body()));
         }
 
         return new StoredFile(key, file.getSize(), checksum);
@@ -142,11 +185,13 @@ public class SupabaseStorageProvider implements StorageProvider {
         HttpRequest request = authorizedRequest(objectUrl(storageKey)).GET().build();
         HttpResponse<InputStream> response = send(request, HttpResponse.BodyHandlers.ofInputStream());
         if (response.statusCode() == 404) {
+            closeQuietly(response.body());
             throw new InvalidFileException("Invalid storage key");
         }
-        if (response.statusCode() != 200) {
+        if (!isSuccessfulNonHtml(response)) {
+            closeQuietly(response.body());
             throw new SupabaseStorageException(
-                    "Supabase download failed for " + storageKey + " with status " + response.statusCode());
+                    "Supabase download failed for " + storageKey + ": " + describe(response, null));
         }
         return response.body();
     }
@@ -156,10 +201,9 @@ public class SupabaseStorageProvider implements StorageProvider {
         requireConfig();
         HttpRequest request = authorizedRequest(objectUrl(storageKey)).DELETE().build();
         HttpResponse<String> response = send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() != 200 && response.statusCode() != 204 && response.statusCode() != 404) {
-            throw new SupabaseStorageException(
-                    "Supabase delete failed for " + storageKey + " with status " + response.statusCode() + ": "
-                            + truncate(response.body()));
+        boolean acceptable = response.statusCode() == 200 || response.statusCode() == 204 || response.statusCode() == 404;
+        if (!acceptable || isHtml(response)) {
+            throw new SupabaseStorageException("Supabase delete failed for " + storageKey + ": " + describe(response, response.body()));
         }
     }
 
@@ -169,7 +213,7 @@ public class SupabaseStorageProvider implements StorageProvider {
             requireConfig();
             HttpRequest request = authorizedRequest(objectInfoUrl(storageKey)).GET().build();
             HttpResponse<Void> response = send(request, HttpResponse.BodyHandlers.discarding());
-            return response.statusCode() == 200;
+            return response.statusCode() == 200 && !isHtml(response);
         } catch (Exception e) {
             return false;
         }
@@ -188,6 +232,30 @@ public class SupabaseStorageProvider implements StorageProvider {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new SupabaseStorageException("Interrupted while calling Supabase Storage", e);
+        }
+    }
+
+    /** 2xx status AND not an HTML body -- a wrong-but-resolving host often answers 200 with an HTML page. */
+    private static boolean isSuccessfulNonHtml(HttpResponse<?> response) {
+        int status = response.statusCode();
+        return status >= 200 && status < 300 && !isHtml(response);
+    }
+
+    private static boolean isHtml(HttpResponse<?> response) {
+        return response.headers().firstValue("Content-Type").orElse("").toLowerCase(Locale.ROOT).contains("text/html");
+    }
+
+    private static String describe(HttpResponse<?> response, String body) {
+        String contentType = response.headers().firstValue("Content-Type").orElse("(none)");
+        String suffix = body != null ? ": " + truncate(body) : "";
+        return "status=" + response.statusCode() + " content-type=" + contentType + suffix;
+    }
+
+    private static void closeQuietly(InputStream in) {
+        try {
+            in.close();
+        } catch (IOException ignored) {
+            // best-effort
         }
     }
 

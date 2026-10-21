@@ -3,10 +3,14 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useParams } from 'react-router-dom'
 import { materialsApi } from '../api/materials'
 import { reportsApi } from '../api/reports'
+import { DocumentViewer } from '../components/DocumentViewer'
 import { ErrorBanner } from '../components/ErrorBanner'
 import { Icon } from '../components/Icon'
 import { Spinner } from '../components/Spinner'
 import { useAuth } from '../context/AuthContext'
+import { materialTypeBadgeClass } from '../utils/materialType'
+import { fileTooLargeMessage } from '../utils/upload'
+import type { MaterialVersion } from '../types'
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -65,6 +69,8 @@ export function MaterialDetailPage() {
   const addVersionMutation = useMutation({
     mutationFn: () => {
       if (!newVersionFile) throw new Error('Choose a file first')
+      const tooLarge = fileTooLargeMessage(newVersionFile)
+      if (tooLarge) throw new Error(tooLarge)
       return materialsApi.addVersion(materialId, newVersionFile, versionNotes || undefined)
     },
     onSuccess: () => {
@@ -87,6 +93,7 @@ export function MaterialDetailPage() {
   })
 
   const [downloadError, setDownloadError] = useState<unknown>(null)
+  const [previewing, setPreviewing] = useState<MaterialVersion | null>(null)
 
   if (materialQuery.isLoading) return <Spinner />
   if (materialQuery.error) return <ErrorBanner error={materialQuery.error} />
@@ -150,7 +157,9 @@ export function MaterialDetailPage() {
           </div>
 
           <div className="row text-sm muted">
-            <span className="badge">{material.materialType.replace('_', ' ')}</span>
+            <span className={materialTypeBadgeClass(material.materialType)}>
+              {material.materialType.replace('_', ' ')}
+            </span>
             {material.visibility === 'PRIVATE' && (
               <span className="badge badge-vault">
                 <Icon name="lock" size={11} />
@@ -350,19 +359,36 @@ export function MaterialDetailPage() {
                   <td className="text-sm muted">{new Date(v.createdAt).toLocaleString()}</td>
                   <td className="text-sm muted">{v.versionNotes ?? '--'}</td>
                   <td>
-                    <button
-                      className="btn btn-sm"
-                      onClick={() => handleDownloadVersion(v.versionId, v.originalFileName)}
-                    >
-                      <Icon name="download" size={13} />
-                      Download
-                    </button>
+                    <div className="row" style={{ gap: 6, flexWrap: 'nowrap' }}>
+                      <button className="btn btn-sm" onClick={() => setPreviewing(v)}>
+                        <Icon name="file" size={13} />
+                        View
+                      </button>
+                      <button
+                        className="btn btn-sm"
+                        onClick={() => handleDownloadVersion(v.versionId, v.originalFileName)}
+                      >
+                        <Icon name="download" size={13} />
+                        Download
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+
+      {previewing && (
+        <DocumentViewer
+          materialId={materialId}
+          versionId={previewing.versionId}
+          fileName={previewing.originalFileName}
+          mimeType={previewing.mimeType}
+          onClose={() => setPreviewing(null)}
+          onDownload={() => handleDownloadVersion(previewing.versionId, previewing.originalFileName)}
+        />
       )}
     </div>
   )

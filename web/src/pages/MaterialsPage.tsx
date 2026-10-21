@@ -8,6 +8,7 @@ import { Icon } from '../components/Icon'
 import { Pagination } from '../components/Pagination'
 import { Spinner } from '../components/Spinner'
 import type { Material, MaterialType, SortOrder } from '../types'
+import { materialTypeBadgeClass } from '../utils/materialType'
 
 const TYPES: MaterialType[] = ['NOTE', 'TEXTBOOK', 'QUESTION_PAPER', 'PRESENTATION', 'OTHER']
 
@@ -149,7 +150,9 @@ function MaterialCard({ material }: { material: Material }) {
             )}
           </div>
           <div className="row text-sm muted" style={{ marginTop: 4 }}>
-            <span className="badge">{material.materialType.replace('_', ' ')}</span>
+            <span className={materialTypeBadgeClass(material.materialType)}>
+              {material.materialType.replace('_', ' ')}
+            </span>
             {material.subjectCode && <span>{material.subjectCode}</span>}
           </div>
         </div>
