@@ -10,6 +10,7 @@ import { Spinner } from '../components/Spinner'
 import { useAuth } from '../context/AuthContext'
 import { materialTypeBadgeClass } from '../utils/materialType'
 import { fileTooLargeMessage } from '../utils/upload'
+import { formatDateTime } from '../utils/formatDate'
 import type { MaterialVersion } from '../types'
 
 function formatBytes(bytes: number): string {
@@ -356,7 +357,7 @@ export function MaterialDetailPage() {
                   <td>{v.originalFileName}</td>
                   <td>{formatBytes(v.fileSizeBytes)}</td>
                   <td>{v.uploadedByUsername}</td>
-                  <td className="text-sm muted">{new Date(v.createdAt).toLocaleString()}</td>
+                  <td className="text-sm muted">{formatDateTime(v.createdAt)}</td>
                   <td className="text-sm muted">{v.versionNotes ?? '--'}</td>
                   <td>
                     <div className="row" style={{ gap: 6, flexWrap: 'nowrap' }}>

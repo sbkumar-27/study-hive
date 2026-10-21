@@ -8,6 +8,7 @@ import { Icon } from '../components/Icon'
 import { Pagination } from '../components/Pagination'
 import { Spinner } from '../components/Spinner'
 import type { ReportStatus } from '../types'
+import { formatDate } from '../utils/formatDate'
 
 export function ReportsPage() {
   const [page, setPage] = useState(0)
@@ -58,7 +59,7 @@ export function ReportsPage() {
                     </td>
                     <td>{r.reportedByUsername}</td>
                     <td>{r.reason}</td>
-                    <td className="text-sm muted">{new Date(r.createdAt).toLocaleDateString()}</td>
+                    <td className="text-sm muted">{formatDate(r.createdAt)}</td>
                     <td>
                       <div className="row">
                         <button

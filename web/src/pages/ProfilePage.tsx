@@ -1,4 +1,5 @@
 import { useAuth } from '../context/AuthContext'
+import { formatDate } from '../utils/formatDate'
 
 function initialsOf(name: string): string {
   const parts = name.trim().split(/\s+/)
@@ -37,7 +38,7 @@ export function ProfilePage() {
           </div>
           <div>
             <strong>Member since</strong>
-            <p className="muted" style={{ margin: 0 }}>{new Date(user.createdAt).toLocaleDateString()}</p>
+            <p className="muted" style={{ margin: 0 }}>{formatDate(user.createdAt)}</p>
           </div>
         </dl>
       </div>

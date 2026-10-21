@@ -7,6 +7,7 @@ import { ErrorBanner } from '../components/ErrorBanner'
 import { Spinner } from '../components/Spinner'
 import { EmptyState } from '../components/EmptyState'
 import { Icon } from '../components/Icon'
+import { formatDate } from '../utils/formatDate'
 
 export function CommunityDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -234,7 +235,7 @@ export function CommunityDetailPage() {
                       <td>
                         <span className="badge badge-primary">{m.memberRole}</span>
                       </td>
-                      <td className="text-sm muted">{new Date(m.joinedAt).toLocaleDateString()}</td>
+                      <td className="text-sm muted">{formatDate(m.joinedAt)}</td>
                     </tr>
                   ))}
                 </tbody>

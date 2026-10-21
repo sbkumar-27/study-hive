@@ -7,6 +7,7 @@ import { EmptyState } from '../components/EmptyState'
 import { Icon } from '../components/Icon'
 import { Pagination } from '../components/Pagination'
 import { Spinner } from '../components/Spinner'
+import { formatDate } from '../utils/formatDate'
 
 export function VaultPage() {
   const [page, setPage] = useState(0)
@@ -63,7 +64,7 @@ export function VaultPage() {
                 </div>
                 {m.description && <p className="text-sm">{m.description}</p>}
                 <p className="text-sm muted" style={{ marginBottom: 0 }}>
-                  v{m.latestVersionNumber} &middot; updated {new Date(m.updatedAt).toLocaleDateString()}
+                  v{m.latestVersionNumber} &middot; updated {formatDate(m.updatedAt)}
                 </p>
               </Link>
             ))}
