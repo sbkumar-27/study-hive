@@ -5,6 +5,8 @@ import com.studyhive.backend.dto.community.CommunityDto;
 import com.studyhive.backend.dto.community.CommunityMemberDto;
 import com.studyhive.backend.dto.community.CreateCommunityRequest;
 import com.studyhive.backend.dto.community.JoinCommunityRequest;
+import com.studyhive.backend.dto.community.ShareLinkAccessRequest;
+import com.studyhive.backend.dto.community.ShareLinkPreviewDto;
 import com.studyhive.backend.security.AppUserPrincipal;
 import com.studyhive.backend.service.CommunityService;
 import jakarta.validation.Valid;
@@ -69,6 +71,23 @@ public class CommunityController {
     public ResponseEntity<CommunityDto> join(
             @Valid @RequestBody JoinCommunityRequest request, @AuthenticationPrincipal AppUserPrincipal principal) {
         return ResponseEntity.ok(communityService.joinCommunity(request, principal.getUserId()));
+    }
+
+    /** Share link preview: GET /api/v1/communities/link/{joinCode}. Needs login, does not grant access. */
+    @GetMapping("/link/{joinCode}")
+    public ResponseEntity<ShareLinkPreviewDto> previewLink(
+            @PathVariable String joinCode, @AuthenticationPrincipal AppUserPrincipal principal) {
+        return ResponseEntity.ok(communityService.previewShareLink(joinCode, principal.getUserId()));
+    }
+
+    /** Opens the community read-only through its share link, without joining. */
+    @PostMapping("/link/{joinCode}/access")
+    public ResponseEntity<CommunityDto> accessViaLink(
+            @PathVariable String joinCode,
+            @RequestBody(required = false) ShareLinkAccessRequest request,
+            @AuthenticationPrincipal AppUserPrincipal principal) {
+        String password = request == null ? null : request.password();
+        return ResponseEntity.ok(communityService.accessViaShareLink(joinCode, password, principal.getUserId()));
     }
 
     @PostMapping("/{id}/leave")

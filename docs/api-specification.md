@@ -37,10 +37,12 @@ tracks progress.
 | POST | `/communities` | bearer | ✅ | Create community; creator becomes `OWNER`. Body: `{name, description?, communityType?, privatePassword?}`. |
 | GET | `/communities` | bearer | ✅ | List/search **public** communities (`?q=&page=&size=`). |
 | GET | `/communities/mine` | bearer | ✅ | Communities the caller belongs to (public or private). |
-| GET | `/communities/{id}` | bearer | ✅ | Community detail; 403 if private and not a member. |
+| GET | `/communities/{id}` | bearer | ✅ | Community detail; 403 if private and neither a member nor a share-link guest. `guestAccess` is true for guests. |
 | POST | `/communities/join` | bearer | ✅ | Body: `{joinCode, password?}`. `password` required only if the community set one. |
 | POST | `/communities/{id}/leave` | bearer | ✅ | Owner cannot leave without transferring ownership first. |
 | GET | `/communities/{id}/members` | bearer | ✅ | Members only. |
+| GET | `/communities/link/{joinCode}` | bearer | ✅ | Share-link preview card (name, type, `requiresPassword`, `hasAccess`). Grants nothing. |
+| POST | `/communities/link/{joinCode}/access` | bearer | ✅ | Body: `{password?}`. Grants **read-only guest access without joining**: view/download materials, subjects and question papers. Uploading, adding subjects and the member list stay members-only. Web share URL: `/c/{joinCode}`. |
 
 ## `/subjects`
 

@@ -20,10 +20,21 @@ public record CommunityDto(
         boolean hasPassword,
         long memberCount,
         MemberRole currentUserRole,
-        Instant createdAt) {
+        Instant createdAt,
+        // True when the caller is not a member but opened the community's share link: read-only access.
+        boolean guestAccess) {
 
     public static CommunityDto of(
             Community community, long memberCount, MemberRole currentUserRole, boolean includeJoinCode) {
+        return of(community, memberCount, currentUserRole, includeJoinCode, false);
+    }
+
+    public static CommunityDto of(
+            Community community,
+            long memberCount,
+            MemberRole currentUserRole,
+            boolean includeJoinCode,
+            boolean guestAccess) {
         return new CommunityDto(
                 community.getCommunityId(),
                 community.getName(),
@@ -36,6 +47,7 @@ public record CommunityDto(
                 community.getPrivatePasswordHash() != null,
                 memberCount,
                 currentUserRole,
-                community.getCreatedAt());
+                community.getCreatedAt(),
+                guestAccess);
     }
 }

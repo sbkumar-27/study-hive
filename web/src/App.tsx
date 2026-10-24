@@ -14,6 +14,7 @@ import { ProfilePage } from './pages/ProfilePage'
 import { QuestionPapersPage } from './pages/QuestionPapersPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { ReportsPage } from './pages/ReportsPage'
+import { ShareLinkPage } from './pages/ShareLinkPage'
 import { UploadMaterialPage } from './pages/UploadMaterialPage'
 import { VaultPage } from './pages/VaultPage'
 
@@ -46,6 +47,7 @@ function App() {
               <Route path="/communities" element={<CommunitiesPage />} />
               <Route path="/communities/new" element={<CreateCommunityPage />} />
               <Route path="/communities/:id" element={<CommunityDetailPage />} />
+              <Route path="/c/:code" element={<ShareLinkPage />} />
               <Route path="/materials" element={<MaterialsPage />} />
               <Route path="/materials/new" element={<UploadMaterialPage />} />
               <Route path="/materials/:id" element={<MaterialDetailPage />} />

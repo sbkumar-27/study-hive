@@ -41,7 +41,7 @@ public class SubjectService {
 
     @Transactional(readOnly = true)
     public List<SubjectDto> listSubjects(Long communityId, Long currentUserId) {
-        communityService.requireMembership(communityId, currentUserId);
+        communityService.requireViewAccess(communityId, currentUserId);
         return subjectRepository.findByCommunity_CommunityIdOrderBySubjectCodeAsc(communityId).stream()
                 .map(SubjectDto::from)
                 .toList();

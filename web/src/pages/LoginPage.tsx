@@ -64,7 +64,7 @@ export function LoginPage() {
           </button>
         </form>
         <p className="text-sm muted" style={{ marginTop: 16 }}>
-          Don't have an account? <Link to="/register">Register</Link>
+          Don't have an account? <Link to="/register" state={location.state}>Register</Link>
         </p>
       </div>
     </div>

@@ -5,7 +5,9 @@ import com.studyhive.backend.dto.community.CommunityDto;
 import com.studyhive.backend.dto.community.CommunityMemberDto;
 import com.studyhive.backend.dto.community.CreateCommunityRequest;
 import com.studyhive.backend.dto.community.JoinCommunityRequest;
+import com.studyhive.backend.dto.community.ShareLinkPreviewDto;
 import com.studyhive.backend.entity.Community;
+import com.studyhive.backend.entity.CommunityGuestAccess;
 import com.studyhive.backend.entity.CommunityMember;
 import com.studyhive.backend.entity.CommunityType;
 import com.studyhive.backend.entity.MemberRole;
@@ -14,11 +16,14 @@ import com.studyhive.backend.exception.BadRequestException;
 import com.studyhive.backend.exception.ConflictException;
 import com.studyhive.backend.exception.ForbiddenException;
 import com.studyhive.backend.exception.ResourceNotFoundException;
+import com.studyhive.backend.repository.CommunityGuestAccessRepository;
 import com.studyhive.backend.repository.CommunityMemberRepository;
 import com.studyhive.backend.repository.CommunityRepository;
 import com.studyhive.backend.repository.UserRepository;
 import com.studyhive.backend.util.JoinCodeGenerator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,16 +37,19 @@ public class CommunityService {
     private final CommunityMemberRepository memberRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CommunityGuestAccessRepository guestAccessRepository;
 
     public CommunityService(
             CommunityRepository communityRepository,
             CommunityMemberRepository memberRepository,
             UserRepository userRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            CommunityGuestAccessRepository guestAccessRepository) {
         this.communityRepository = communityRepository;
         this.memberRepository = memberRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.guestAccessRepository = guestAccessRepository;
     }
 
     @Transactional
@@ -100,10 +108,75 @@ public class CommunityService {
     public CommunityDto getCommunity(Long communityId, Long currentUserId) {
         Community community = requireCommunity(communityId);
         boolean isMember = memberRepository.existsByCommunity_CommunityIdAndUser_UserId(communityId, currentUserId);
-        if (community.getCommunityType() == CommunityType.PRIVATE && !isMember) {
+        boolean isGuest = !isMember
+                && guestAccessRepository.existsByCommunity_CommunityIdAndUser_UserId(communityId, currentUserId);
+        if (community.getCommunityType() == CommunityType.PRIVATE && !isMember && !isGuest) {
             throw new ForbiddenException("This community is private");
         }
-        return toDto(community, currentUserId, isMember || community.getCommunityType() == CommunityType.PUBLIC);
+        return toDto(
+                community,
+                currentUserId,
+                isMember || isGuest || community.getCommunityType() == CommunityType.PUBLIC,
+                isGuest);
+    }
+
+    /** What a logged-in user sees when they open a share link. Never reveals more than the public card. */
+    @Transactional(readOnly = true)
+    public ShareLinkPreviewDto previewShareLink(String joinCode, Long currentUserId) {
+        Community community = requireByJoinCode(joinCode);
+        Long communityId = community.getCommunityId();
+        boolean isMember = memberRepository.existsByCommunity_CommunityIdAndUser_UserId(communityId, currentUserId);
+        boolean hasAccess = isMember
+                || guestAccessRepository.existsByCommunity_CommunityIdAndUser_UserId(communityId, currentUserId);
+        long memberCount = memberRepository.countByCommunity_CommunityId(communityId);
+        return ShareLinkPreviewDto.of(community, memberCount, isMember, hasAccess);
+    }
+
+    /**
+     * Grants read-only (guest) access through a share link, WITHOUT joining. The community password is still
+     * required when the community has one. Calling it again is harmless.
+     */
+    @Transactional
+    public CommunityDto accessViaShareLink(String joinCode, String password, Long currentUserId) {
+        Community community = requireByJoinCode(joinCode);
+        Long communityId = community.getCommunityId();
+
+        if (memberRepository.existsByCommunity_CommunityIdAndUser_UserId(communityId, currentUserId)) {
+            return toDto(community, currentUserId, true, false);
+        }
+
+        if (!guestAccessRepository.existsByCommunity_CommunityIdAndUser_UserId(communityId, currentUserId)) {
+            if (community.getPrivatePasswordHash() != null
+                    && (password == null || !passwordEncoder.matches(password, community.getPrivatePasswordHash()))) {
+                throw new ForbiddenException("Incorrect community password");
+            }
+            User user = userRepository.getReferenceById(currentUserId);
+            guestAccessRepository.save(new CommunityGuestAccess(community, user));
+        }
+        return toDto(community, currentUserId, true, true);
+    }
+
+    /** Members and share-link guests may read a community's materials, subjects and question papers. */
+    @Transactional(readOnly = true)
+    public boolean canView(Long communityId, Long currentUserId) {
+        return memberRepository.existsByCommunity_CommunityIdAndUser_UserId(communityId, currentUserId)
+                || guestAccessRepository.existsByCommunity_CommunityIdAndUser_UserId(communityId, currentUserId);
+    }
+
+    @Transactional(readOnly = true)
+    public void requireViewAccess(Long communityId, Long currentUserId) {
+        if (!canView(communityId, currentUserId)) {
+            throw new ForbiddenException("Open this community's share link or join it to see its content");
+        }
+    }
+
+    private Community requireByJoinCode(String joinCode) {
+        if (joinCode == null || joinCode.isBlank()) {
+            throw new ResourceNotFoundException("This share link is not valid");
+        }
+        return communityRepository
+                .findByJoinCode(joinCode.trim())
+                .orElseThrow(() -> new ResourceNotFoundException("This share link is not valid"));
     }
 
     @Transactional
@@ -152,9 +225,13 @@ public class CommunityService {
 
     @Transactional(readOnly = true)
     public List<Long> accessibleCommunityIds(Long currentUserId) {
-        return memberRepository.findByUser_UserId(currentUserId).stream()
-                .map(m -> m.getCommunity().getCommunityId())
-                .toList();
+        // Communities whose content the user can READ: memberships plus share-link guest access.
+        Set<Long> ids = new LinkedHashSet<>();
+        memberRepository.findByUser_UserId(currentUserId)
+                .forEach(m -> ids.add(m.getCommunity().getCommunityId()));
+        guestAccessRepository.findByUser_UserId(currentUserId)
+                .forEach(g -> ids.add(g.getCommunity().getCommunityId()));
+        return List.copyOf(ids);
     }
 
     @Transactional(readOnly = true)
@@ -177,12 +254,17 @@ public class CommunityService {
     }
 
     private CommunityDto toDto(Community community, Long currentUserId, boolean includeJoinCode) {
+        return toDto(community, currentUserId, includeJoinCode, false);
+    }
+
+    private CommunityDto toDto(
+            Community community, Long currentUserId, boolean includeJoinCode, boolean guestAccess) {
         long memberCount = memberRepository.countByCommunity_CommunityId(community.getCommunityId());
         MemberRole role = memberRepository
                 .findByCommunity_CommunityIdAndUser_UserId(community.getCommunityId(), currentUserId)
                 .map(CommunityMember::getMemberRole)
                 .orElse(null);
-        return CommunityDto.of(community, memberCount, role, includeJoinCode);
+        return CommunityDto.of(community, memberCount, role, includeJoinCode, guestAccess);
     }
 
     private String generateUniqueJoinCode() {

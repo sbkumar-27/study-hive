@@ -1,11 +1,12 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { ErrorBanner } from '../components/ErrorBanner'
 
 export function RegisterPage() {
   const { register } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [form, setForm] = useState({ username: '', email: '', password: '', displayName: '' })
   const [error, setError] = useState<unknown>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -20,7 +21,8 @@ export function RegisterPage() {
     setSubmitting(true)
     try {
       await register(form)
-      navigate('/communities', { replace: true })
+      const redirectTo = (location.state as { from?: string } | null)?.from ?? '/communities'
+      navigate(redirectTo, { replace: true })
     } catch (err) {
       setError(err)
     } finally {
@@ -88,7 +90,7 @@ export function RegisterPage() {
           </button>
         </form>
         <p className="text-sm muted" style={{ marginTop: 16 }}>
-          Already have an account? <Link to="/login">Log in</Link>
+          Already have an account? <Link to="/login" state={location.state}>Log in</Link>
         </p>
       </div>
     </div>

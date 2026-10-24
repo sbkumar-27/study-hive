@@ -1,5 +1,5 @@
 import { api } from './client'
-import type { Community, CommunityMember, CommunityType, PageResponse } from '../types'
+import type { Community, CommunityMember, CommunityType, PageResponse, ShareLinkPreview } from '../types'
 
 export interface CreateCommunityRequest {
   name: string
@@ -31,4 +31,13 @@ export const communitiesApi = {
   join: (req: JoinCommunityRequest) => api.post<Community>('/communities/join', req),
   leave: (id: number) => api.post<void>(`/communities/${id}/leave`),
   members: (id: number) => api.get<CommunityMember[]>(`/communities/${id}/members`),
+  previewLink: (code: string) =>
+    api.get<ShareLinkPreview>(`/communities/link/${encodeURIComponent(code)}`),
+  accessViaLink: (code: string, password?: string) =>
+    api.post<Community>(`/communities/link/${encodeURIComponent(code)}/access`, { password }),
+}
+
+/** The shareable URL for a community: anyone logged in who opens it can view (and download) its documents. */
+export function shareLinkFor(joinCode: string): string {
+  return `${window.location.origin}/c/${encodeURIComponent(joinCode)}`
 }

@@ -284,8 +284,9 @@ public class MaterialService {
             }
         } else {
             Long communityId = material.getCommunity().getCommunityId();
-            if (!communityService.isMember(communityId, userId)) {
-                throw new ForbiddenException("You must be a member of this material's community to access it");
+            if (!communityService.canView(communityId, userId)) {
+                throw new ForbiddenException(
+                        "Join this material's community or open its share link to access it");
             }
         }
     }

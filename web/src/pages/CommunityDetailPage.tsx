@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { communitiesApi } from '../api/communities'
+import { communitiesApi, shareLinkFor } from '../api/communities'
 import { subjectsApi } from '../api/subjects'
 import { ErrorBanner } from '../components/ErrorBanner'
 import { Spinner } from '../components/Spinner'
@@ -27,7 +27,7 @@ export function CommunityDetailPage() {
   const subjectsQuery = useQuery({
     queryKey: ['community', communityId, 'subjects'],
     queryFn: () => subjectsApi.list(communityId),
-    enabled: !!communityQuery.data?.currentUserRole,
+    enabled: !!communityQuery.data?.currentUserRole || !!communityQuery.data?.guestAccess,
   })
 
   const [subjectCode, setSubjectCode] = useState('')
@@ -35,6 +35,8 @@ export function CommunityDetailPage() {
   const [subjectError, setSubjectError] = useState<unknown>(null)
   const [showSubjectForm, setShowSubjectForm] = useState(false)
   const [confirmingLeave, setConfirmingLeave] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [joinPassword, setJoinPassword] = useState('')
 
   const addSubject = useMutation({
     mutationFn: () => subjectsApi.create(communityId, { subjectCode, subjectName }),
@@ -46,6 +48,23 @@ export function CommunityDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['community', communityId, 'subjects'] })
     },
     onError: (err) => setSubjectError(err),
+  })
+
+  const refreshCommunity = () => {
+    queryClient.invalidateQueries({ queryKey: ['community', communityId] })
+    queryClient.invalidateQueries({ queryKey: ['communities'] })
+  }
+
+  // Public community, no access yet: open its documents read-only without joining.
+  const openWithoutJoining = useMutation({
+    mutationFn: (code: string) => communitiesApi.accessViaLink(code),
+    onSuccess: refreshCommunity,
+  })
+
+  // Guest who decides to become a full member.
+  const joinMutation = useMutation({
+    mutationFn: (code: string) => communitiesApi.join({ joinCode: code, password: joinPassword || undefined }),
+    onSuccess: refreshCommunity,
   })
 
   const leaveMutation = useMutation({
@@ -60,6 +79,18 @@ export function CommunityDetailPage() {
 
   const isMember = !!community.currentUserRole
   const isOwner = community.currentUserRole === 'OWNER'
+  const isGuest = !isMember && community.guestAccess
+  const canView = isMember || isGuest
+
+  async function copyShareLink(code: string) {
+    try {
+      await navigator.clipboard.writeText(shareLinkFor(code))
+    } catch {
+      window.prompt('Copy this link:', shareLinkFor(code))
+    }
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 2000)
+  }
 
   function handleAddSubject(e: FormEvent) {
     e.preventDefault()
@@ -120,26 +151,72 @@ export function CommunityDetailPage() {
               </span>
             )}
             <p className="text-sm muted" style={{ marginTop: 8, marginBottom: 0 }}>
-              Share this code with friends so they can join.
+              Share the code so friends can join, or copy the link so anyone with an account can open the
+              documents without joining{community.hasPassword ? ' (they will still need the password)' : ''}.
             </p>
+            <code className="text-sm" style={{ display: 'block', marginTop: 8, wordBreak: 'break-all' }}>
+              {shareLinkFor(community.joinCode)}
+            </code>
           </div>
+          <button className="btn btn-primary" onClick={() => copyShareLink(community.joinCode!)}>
+            <Icon name={copied ? 'check' : 'file'} size={16} />
+            {copied ? 'Link copied' : 'Copy share link'}
+          </button>
         </div>
       )}
 
-      {!isMember && (
+      {isGuest && community.joinCode && (
+        <div className="alert alert-info">
+          <Icon name="globe" size={16} />
+          <span style={{ flex: 1 }}>
+            You're viewing this community through a share link. You can view and download documents; join to upload
+            your own.
+          </span>
+          {community.hasPassword && (
+            <input
+              type="password"
+              placeholder="Community password"
+              value={joinPassword}
+              onChange={(e) => setJoinPassword(e.target.value)}
+              style={{ maxWidth: 200 }}
+            />
+          )}
+          <button
+            className="btn btn-sm btn-primary"
+            onClick={() => joinMutation.mutate(community.joinCode!)}
+            disabled={joinMutation.isPending || (community.hasPassword && !joinPassword)}
+          >
+            {joinMutation.isPending ? 'Joining...' : 'Join community'}
+          </button>
+        </div>
+      )}
+      {joinMutation.error && <ErrorBanner error={joinMutation.error} />}
+
+      {!canView && (
         <div className="alert alert-info">
           <Icon name="warning" size={16} />
-          <span>
-            You're viewing limited public information. Join this community (using its join code from the
-            Communities page) to see subjects, members, and materials.
+          <span style={{ flex: 1 }}>
+            You're viewing limited public information. Open the documents without joining, or join this community
+            (using its join code from the Communities page) to upload.
           </span>
+          {community.joinCode && (
+            <button
+              className="btn btn-sm btn-primary"
+              onClick={() => openWithoutJoining.mutate(community.joinCode!)}
+              disabled={openWithoutJoining.isPending}
+            >
+              {openWithoutJoining.isPending ? 'Opening...' : 'Open documents'}
+            </button>
+          )}
         </div>
       )}
+      {openWithoutJoining.error && <ErrorBanner error={openWithoutJoining.error} />}
 
-      {isMember && (
+      {canView && (
         <>
           <div className="row-between">
             <h2 style={{ marginBottom: 0 }}>Subjects</h2>
+            {isMember && (
             <button className="btn btn-sm" onClick={() => setShowSubjectForm((v) => !v)}>
               {showSubjectForm ? (
                 'Cancel'
@@ -150,6 +227,7 @@ export function CommunityDetailPage() {
                 </>
               )}
             </button>
+            )}
           </div>
 
           {showSubjectForm && (
@@ -177,7 +255,11 @@ export function CommunityDetailPage() {
 
           {subjectsQuery.isLoading && <Spinner />}
           {subjectsQuery.data && subjectsQuery.data.length === 0 && (
-            <EmptyState icon="materials" title="No subjects yet" hint="Add the first subject for this community." />
+            <EmptyState
+              icon="materials"
+              title="No subjects yet"
+              hint={isMember ? 'Add the first subject for this community.' : 'Nothing has been added here yet.'}
+            />
           )}
           {subjectsQuery.data && subjectsQuery.data.length > 0 && (
             <div className="grid">
@@ -208,12 +290,18 @@ export function CommunityDetailPage() {
               <Icon name="materials" size={16} />
               Browse all materials
             </Link>
-            <Link to={`/materials/new?communityId=${communityId}`} className="btn">
-              <Icon name="upload" size={16} />
-              Upload material
-            </Link>
+            {isMember && (
+              <Link to={`/materials/new?communityId=${communityId}`} className="btn">
+                <Icon name="upload" size={16} />
+                Upload material
+              </Link>
+            )}
           </div>
+        </>
+      )}
 
+      {isMember && (
+        <>
           <h2>Members</h2>
           {membersQuery.isLoading && <Spinner />}
           {membersQuery.data && (

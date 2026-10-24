@@ -107,7 +107,7 @@ class MaterialServiceTest {
         Material material = new Material();
         material.setVisibility(MaterialVisibility.COMMUNITY);
         material.setCommunity(communityWithId(7L));
-        when(communityService.isMember(7L, 1L)).thenReturn(true);
+        when(communityService.canView(7L, 1L)).thenReturn(true);
 
         materialService.checkAccess(material, 1L);
     }
@@ -117,7 +117,7 @@ class MaterialServiceTest {
         Material material = new Material();
         material.setVisibility(MaterialVisibility.COMMUNITY);
         material.setCommunity(communityWithId(7L));
-        when(communityService.isMember(7L, 1L)).thenReturn(false);
+        when(communityService.canView(7L, 1L)).thenReturn(false);
 
         assertThatThrownBy(() -> materialService.checkAccess(material, 1L))
                 .isInstanceOf(ForbiddenException.class);

@@ -179,3 +179,16 @@ FROM materials m
 LEFT JOIN material_views v ON v.material_id = m.material_id
 GROUP BY
     m.material_id, m.title, m.community_id, m.subject_id;
+
+-- Share-link (guest) read-only access; see migrations/003_add_community_guest_access.sql
+CREATE TABLE IF NOT EXISTS community_guest_access (
+    community_id BIGINT UNSIGNED NOT NULL,
+    user_id BIGINT UNSIGNED NOT NULL,
+    granted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (community_id, user_id),
+    CONSTRAINT fk_guest_community
+        FOREIGN KEY (community_id) REFERENCES communities(community_id) ON DELETE CASCADE,
+    CONSTRAINT fk_guest_user
+        FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    INDEX idx_community_guest_access_user (user_id)
+);

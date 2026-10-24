@@ -10,12 +10,14 @@ import static org.mockito.Mockito.when;
 import com.studyhive.backend.dto.community.CreateCommunityRequest;
 import com.studyhive.backend.dto.community.JoinCommunityRequest;
 import com.studyhive.backend.entity.Community;
+import com.studyhive.backend.entity.CommunityGuestAccess;
 import com.studyhive.backend.entity.CommunityMember;
 import com.studyhive.backend.entity.CommunityType;
 import com.studyhive.backend.entity.MemberRole;
 import com.studyhive.backend.entity.User;
 import com.studyhive.backend.exception.BadRequestException;
 import com.studyhive.backend.exception.ForbiddenException;
+import com.studyhive.backend.repository.CommunityGuestAccessRepository;
 import com.studyhive.backend.repository.CommunityMemberRepository;
 import com.studyhive.backend.repository.CommunityRepository;
 import com.studyhive.backend.repository.UserRepository;
@@ -34,13 +36,15 @@ class CommunityServiceTest {
     @Mock private CommunityRepository communityRepository;
     @Mock private CommunityMemberRepository memberRepository;
     @Mock private UserRepository userRepository;
+    @Mock private CommunityGuestAccessRepository guestAccessRepository;
 
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private CommunityService communityService;
 
     @BeforeEach
     void setUp() {
-        communityService = new CommunityService(communityRepository, memberRepository, userRepository, passwordEncoder);
+        communityService = new CommunityService(
+                communityRepository, memberRepository, userRepository, passwordEncoder, guestAccessRepository);
     }
 
     private static User userWithId(long id) {
@@ -110,5 +114,57 @@ class CommunityServiceTest {
 
         assertThatThrownBy(() -> communityService.leaveCommunity(5L, 1L))
                 .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void shareLink_privateCommunity_wrongPassword_isForbidden() {
+        Community community = new Community();
+        community.setCommunityId(5L);
+        community.setOwner(userWithId(1L));
+        community.setPrivatePasswordHash(passwordEncoder.encode("secret"));
+        when(communityRepository.findByJoinCode("CODE123")).thenReturn(java.util.Optional.of(community));
+
+        assertThatThrownBy(() -> communityService.accessViaShareLink("CODE123", "wrong", 2L))
+                .isInstanceOf(ForbiddenException.class);
+        verify(guestAccessRepository, never()).save(any());
+        verify(memberRepository, never()).save(any());
+    }
+
+    @Test
+    void shareLink_correctPassword_grantsGuestAccessWithoutJoining() {
+        Community community = new Community();
+        community.setCommunityId(5L);
+        community.setOwner(userWithId(1L));
+        community.setPrivatePasswordHash(passwordEncoder.encode("secret"));
+        when(communityRepository.findByJoinCode("CODE123")).thenReturn(java.util.Optional.of(community));
+        when(userRepository.getReferenceById(2L)).thenReturn(userWithId(2L));
+
+        var dto = communityService.accessViaShareLink("CODE123", "secret", 2L);
+
+        verify(guestAccessRepository).save(any(CommunityGuestAccess.class));
+        verify(memberRepository, never()).save(any());
+        assertThat(dto.guestAccess()).isTrue();
+    }
+
+    @Test
+    void shareLink_existingMember_isNotTurnedIntoGuest() {
+        Community community = new Community();
+        community.setCommunityId(5L);
+        community.setOwner(userWithId(1L));
+        when(communityRepository.findByJoinCode("CODE123")).thenReturn(java.util.Optional.of(community));
+        when(memberRepository.existsByCommunity_CommunityIdAndUser_UserId(5L, 2L)).thenReturn(true);
+
+        var dto = communityService.accessViaShareLink("CODE123", null, 2L);
+
+        verify(guestAccessRepository, never()).save(any());
+        assertThat(dto.guestAccess()).isFalse();
+    }
+
+    @Test
+    void guestCanView_butNonGuestNonMemberCannot() {
+        when(guestAccessRepository.existsByCommunity_CommunityIdAndUser_UserId(5L, 2L)).thenReturn(true);
+
+        assertThat(communityService.canView(5L, 2L)).isTrue();
+        assertThat(communityService.canView(5L, 3L)).isFalse();
     }
 }

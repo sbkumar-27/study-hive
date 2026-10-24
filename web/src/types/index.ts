@@ -36,6 +36,20 @@ export interface Community {
   memberCount: number
   currentUserRole: MemberRole | null
   createdAt: string
+  /** True when the user is not a member but opened the community through its share link (read-only). */
+  guestAccess: boolean
+}
+
+export interface ShareLinkPreview {
+  communityId: number
+  name: string
+  description: string | null
+  communityType: CommunityType
+  ownerUsername: string
+  memberCount: number
+  requiresPassword: boolean
+  isMember: boolean
+  hasAccess: boolean
 }
 
 export interface CommunityMember {
