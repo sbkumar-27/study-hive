@@ -1,0 +1,27 @@
+name: Keep Aiven database awake
+
+on:
+  schedule:
+    # Every 3 hours (GitHub cron runs in UTC and may start a few minutes late).
+    - cron: "17 */3 * * *"
+  workflow_dispatch: # lets you run it by hand from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend health endpoint (wakes Render, queries Aiven)
+        env:
+          BACKEND_URL: ${{ vars.BACKEND_URL }}
+        run: |
+          if [ -z "$BACKEND_URL" ]; then
+            echo "BACKEND_URL repository variable is not set"; exit 1
+          fi
+          # Render's free tier can take ~1 minute to wake up, so allow retries.
+          for i in 1 2 3 4 5; do
+            if curl -fsS --max-time 90 "$BACKEND_URL/api/v1/health"; then
+              echo; echo "Database is awake."; exit 0
+            fi
+            echo "Attempt $i failed, retrying in 30s..."; sleep 30
+          done
+          echo "Health check failed - check Aiven and Render dashboards."; exit 1
