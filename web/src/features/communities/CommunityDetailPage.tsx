@@ -18,6 +18,8 @@ import type { Community, Material, ReportStatus, Subject } from '../../shared/ty
 
 type TabKey = 'materials' | 'papers' | 'subjects' | 'members' | 'reports'
 
+const MATERIALS_PAGE_SIZE = 30
+
 function getStarredIds(userId: number): number[] {
   try {
     const raw = localStorage.getItem(`studyhive.starred.${userId}`)
@@ -557,13 +559,15 @@ function MaterialsTab({
 }) {
   const [goToFile, setGoToFile] = useState('')
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [loadedCount, setLoadedCount] = useState(MATERIALS_PAGE_SIZE)
 
   const materialsQuery = useQuery({
-    queryKey: ['community', communityId, 'materials'],
-    queryFn: () => materialsApi.search({ communityId, size: 200, sort: 'newest' }),
+    queryKey: ['community', communityId, 'materials', loadedCount],
+    queryFn: () => materialsApi.search({ communityId, size: loadedCount, sort: 'newest' }),
   })
 
   const allMaterials = materialsQuery.data?.content ?? []
+  const hasMoreMaterials = !!materialsQuery.data && allMaterials.length < materialsQuery.data.totalElements
   const latestUpload = allMaterials[0]
 
   const filtered = allMaterials.filter((m) => {
@@ -654,6 +658,18 @@ function MaterialsTab({
             )
           })}
         </div>
+      )}
+
+      {hasMoreMaterials && (
+        <button
+          type="button"
+          className="btn"
+          onClick={() => setLoadedCount((n) => n + MATERIALS_PAGE_SIZE)}
+          disabled={materialsQuery.isFetching}
+          style={{ alignSelf: 'flex-start' }}
+        >
+          {materialsQuery.isFetching ? 'Loading...' : 'Load more'}
+        </button>
       )}
     </div>
   )

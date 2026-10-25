@@ -236,10 +236,10 @@ class MaterialServiceTest {
                 new org.springframework.data.domain.PageImpl<>(java.util.List.of(material));
         when(materialRepository.search(any(), eq(1L), isNull(), isNull(), isNull(), any(), any()))
                 .thenReturn(page);
-        when(viewRepository.countByMaterial_MaterialId(10L)).thenReturn(3L);
-        when(favoriteRepository.existsByUser_UserIdAndMaterial_MaterialId(1L, 10L)).thenReturn(false);
-        when(versionRepository.findTopByMaterial_MaterialIdOrderByVersionNumberDesc(10L))
-                .thenReturn(java.util.Optional.empty());
+        when(viewRepository.countByMaterialIdIn(java.util.List.of(10L))).thenReturn(java.util.List.of());
+        when(favoriteRepository.findMaterial_MaterialIdByUser_UserIdAndMaterial_MaterialIdIn(1L, java.util.List.of(10L)))
+                .thenReturn(java.util.List.of());
+        when(versionRepository.findByMaterial_MaterialIdIn(java.util.List.of(10L))).thenReturn(java.util.List.of());
 
         var result = materialService.searchAll(
                 "midterm", org.springframework.data.domain.PageRequest.of(0, 20), 1L);
@@ -262,10 +262,10 @@ class MaterialServiceTest {
                 new org.springframework.data.domain.PageImpl<>(java.util.List.of(material));
         when(materialRepository.search(any(), eq(1L), isNull(), isNull(), isNull(), any(), any()))
                 .thenReturn(page);
-        when(viewRepository.countByMaterial_MaterialId(11L)).thenReturn(0L);
-        when(favoriteRepository.existsByUser_UserIdAndMaterial_MaterialId(1L, 11L)).thenReturn(false);
-        when(versionRepository.findTopByMaterial_MaterialIdOrderByVersionNumberDesc(11L))
-                .thenReturn(java.util.Optional.empty());
+        when(viewRepository.countByMaterialIdIn(java.util.List.of(11L))).thenReturn(java.util.List.of());
+        when(favoriteRepository.findMaterial_MaterialIdByUser_UserIdAndMaterial_MaterialIdIn(1L, java.util.List.of(11L)))
+                .thenReturn(java.util.List.of());
+        when(versionRepository.findByMaterial_MaterialIdIn(java.util.List.of(11L))).thenReturn(java.util.List.of());
 
         var result = materialService.searchAll(
                 null, org.springframework.data.domain.PageRequest.of(0, 20), 1L);

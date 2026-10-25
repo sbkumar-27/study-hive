@@ -31,8 +31,13 @@ import com.studyhive.backend.common.storage.StorageProviderRegistry;
 import com.studyhive.backend.common.storage.StoredFile;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -164,7 +169,7 @@ public class MaterialService {
                     accessibleCommunityIds, userId, communityId, subjectId, type, likeQuery, withSort);
         }
 
-        return PageResponse.of(page, m -> toDto(m, userId));
+        return pageResponseOf(page, userId);
     }
 
     /** Combined search across materials and question papers (a question paper is a 1:1 extension of
@@ -183,7 +188,10 @@ public class MaterialService {
         Page<Material> page = materialRepository.search(
                 accessibleCommunityIds, userId, null, null, null, likeQuery, withSort);
 
-        return PageResponse.of(page, m -> SearchResultDto.of(toDto(m, userId)));
+        List<SearchResultDto> content = toDtos(page.getContent(), userId).stream()
+                .map(SearchResultDto::of)
+                .toList();
+        return new PageResponse<>(content, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages());
     }
 
     @Transactional(readOnly = true)
@@ -210,7 +218,7 @@ public class MaterialService {
     public PageResponse<MaterialDto> listVault(Long userId, Pageable pageable) {
         Page<Material> page = materialRepository.findByUploadedBy_UserIdAndCommunityIsNullAndVisibility(
                 userId, MaterialVisibility.PRIVATE, pageable);
-        return PageResponse.of(page, m -> toDto(m, userId));
+        return pageResponseOf(page, userId);
     }
 
     /** Every material the caller has uploaded (any community, or their vault), newest first. */
@@ -221,7 +229,7 @@ public class MaterialService {
                         pageable.getPageNumber(), pageable.getPageSize(), Sort.by("createdAt").descending())
                 : pageable;
         Page<Material> page = materialRepository.findByUploadedBy_UserId(userId, withSort);
-        return PageResponse.of(page, m -> toDto(m, userId));
+        return pageResponseOf(page, userId);
     }
 
     @Transactional
@@ -331,6 +339,49 @@ public class MaterialService {
                 .findTopByMaterial_MaterialIdOrderByVersionNumberDesc(material.getMaterialId())
                 .orElse(null);
         return toDto(material, userId, viewCount, favorited, latestVersion);
+    }
+
+    /** {@link PageResponse} over a page of materials, batch-fetching view counts, favorites and
+     * latest versions for the whole page in three queries total instead of three per material. */
+    private PageResponse<MaterialDto> pageResponseOf(Page<Material> page, Long userId) {
+        return new PageResponse<>(
+                toDtos(page.getContent(), userId),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages());
+    }
+
+    private List<MaterialDto> toDtos(List<Material> materials, Long userId) {
+        if (materials.isEmpty()) {
+            return List.of();
+        }
+        List<Long> materialIds = materials.stream().map(Material::getMaterialId).toList();
+
+        Map<Long, Long> viewCountsById = viewRepository.countByMaterialIdIn(materialIds).stream()
+                .collect(Collectors.toMap(
+                        MaterialViewRepository.MaterialViewCount::getMaterialId,
+                        MaterialViewRepository.MaterialViewCount::getViewCount));
+
+        Set<Long> favoritedIds = new HashSet<>(
+                favoriteRepository.findMaterial_MaterialIdByUser_UserIdAndMaterial_MaterialIdIn(userId, materialIds));
+
+        Map<Long, MaterialVersion> latestVersionById = new HashMap<>();
+        for (MaterialVersion version : versionRepository.findByMaterial_MaterialIdIn(materialIds)) {
+            latestVersionById.merge(
+                    version.getMaterial().getMaterialId(),
+                    version,
+                    (current, candidate) -> candidate.getVersionNumber() > current.getVersionNumber() ? candidate : current);
+        }
+
+        return materials.stream()
+                .map(m -> toDto(
+                        m,
+                        userId,
+                        viewCountsById.getOrDefault(m.getMaterialId(), 0L),
+                        favoritedIds.contains(m.getMaterialId()),
+                        latestVersionById.get(m.getMaterialId())))
+                .toList();
     }
 
     private MaterialDto toDto(

@@ -26,6 +26,10 @@ spring:
     properties:
       hibernate:
         format_sql: false
+        # Batches lazy-loaded associations (e.g. up to this many at once) into a handful of
+        # "WHERE id IN (...)" queries instead of one query per row -- helps anywhere Hibernate
+        # still lazy-loads one-by-one outside the explicit batch queries in MaterialService.
+        default_batch_fetch_size: 50
   servlet:
     multipart:
       enabled: true

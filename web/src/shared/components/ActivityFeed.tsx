@@ -15,7 +15,7 @@ export function ActivityFeed() {
   })
   const materialsQuery = useQuery({
     queryKey: ['materials', 'activity-feed'],
-    queryFn: () => materialsApi.search({ sort: 'newest', size: 50 }),
+    queryFn: () => materialsApi.search({ sort: 'newest', size: 15 }),
   })
 
   const isLoading = communitiesQuery.isLoading || materialsQuery.isLoading
