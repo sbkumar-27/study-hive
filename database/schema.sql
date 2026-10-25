@@ -38,6 +38,8 @@ CREATE TABLE IF NOT EXISTS communities (
     private_password_hash VARCHAR(255),
     status ENUM('ACTIVE', 'ARCHIVED') NOT NULL DEFAULT 'ACTIVE',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    -- Owner-set note pinned to the top of the community; see migrations/004_add_community_pinned_note.sql
+    pinned_note TEXT NULL,
     CONSTRAINT fk_community_owner
         FOREIGN KEY (owner_id) REFERENCES users(user_id)
 );
