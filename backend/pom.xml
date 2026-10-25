@@ -19,15 +19,7 @@
     <properties>
         <spring-boot.version>4.1.1</spring-boot.version>
         <jjwt.version>0.12.6</jjwt.version>
-        <catalyst-sdk.version>2.4.0</catalyst-sdk.version>
     </properties>
-
-    <repositories>
-        <repository>
-            <id>zoho-catalyst</id>
-            <url>https://maven.zohodl.com</url>
-        </repository>
-    </repositories>
 
     <dependencyManagement>
         <dependencies>
@@ -109,16 +101,6 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>test</scope>
-        </dependency>
-
-        <!-- Zoho Catalyst File Store (opt-in storage provider, see storage.CatalystFileStoreStorageProvider).
-             Pulls its own old javax.servlet-api; kept on the classpath (not excluded) because
-             CatalystSDK's compiled class references it even though we only ever call the
-             AuthHeaderProvider overload, never the legacy javax.servlet.http.HttpServletRequest one. -->
-        <dependency>
-            <groupId>com.zoho.catalyst</groupId>
-            <artifactId>java-sdk</artifactId>
-            <version>${catalyst-sdk.version}</version>
         </dependency>
     </dependencies>
 

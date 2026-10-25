@@ -1,22 +1,19 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Navigate, Route, BrowserRouter, Routes } from 'react-router-dom'
-import { ProtectedRoute } from './components/ProtectedRoute'
-import { AuthProvider } from './context/AuthContext'
-import { AppLayout } from './layouts/AppLayout'
-import { CommunitiesPage } from './pages/CommunitiesPage'
-import { CommunityDetailPage } from './pages/CommunityDetailPage'
-import { CreateCommunityPage } from './pages/CreateCommunityPage'
-import { LoginPage } from './pages/LoginPage'
-import { MaterialDetailPage } from './pages/MaterialDetailPage'
-import { MaterialsPage } from './pages/MaterialsPage'
-import { NotFoundPage } from './pages/NotFoundPage'
-import { ProfilePage } from './pages/ProfilePage'
-import { QuestionPapersPage } from './pages/QuestionPapersPage'
-import { RegisterPage } from './pages/RegisterPage'
-import { ReportsPage } from './pages/ReportsPage'
-import { ShareLinkPage } from './pages/ShareLinkPage'
-import { UploadMaterialPage } from './pages/UploadMaterialPage'
-import { VaultPage } from './pages/VaultPage'
+import { Route, BrowserRouter, Routes } from 'react-router-dom'
+import { ProtectedRoute } from './shared/components/ProtectedRoute'
+import { AuthProvider } from './features/auth/AuthContext'
+import { AppLayout } from './shared/layouts/AppLayout'
+import { CommunitiesPage } from './features/communities/CommunitiesPage'
+import { CommunityDetailPage } from './features/communities/CommunityDetailPage'
+import { CreateCommunityPage } from './features/communities/CreateCommunityPage'
+import { HomePage } from './features/home/HomePage'
+import { LoginPage } from './features/auth/LoginPage'
+import { MaterialDetailPage } from './features/materials/MaterialDetailPage'
+import { NotFoundPage } from './shared/NotFoundPage'
+import { ProfilePage } from './features/profile/ProfilePage'
+import { RegisterPage } from './features/auth/RegisterPage'
+import { ShareLinkPage } from './features/communities/ShareLinkPage'
+import { UploadMaterialPage } from './features/materials/UploadMaterialPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,17 +40,13 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              <Route path="/" element={<Navigate to="/communities" replace />} />
+              <Route path="/" element={<HomePage />} />
               <Route path="/communities" element={<CommunitiesPage />} />
               <Route path="/communities/new" element={<CreateCommunityPage />} />
               <Route path="/communities/:id" element={<CommunityDetailPage />} />
               <Route path="/c/:code" element={<ShareLinkPage />} />
-              <Route path="/materials" element={<MaterialsPage />} />
               <Route path="/materials/new" element={<UploadMaterialPage />} />
               <Route path="/materials/:id" element={<MaterialDetailPage />} />
-              <Route path="/vault" element={<VaultPage />} />
-              <Route path="/question-papers" element={<QuestionPapersPage />} />
-              <Route path="/reports" element={<ReportsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
 
